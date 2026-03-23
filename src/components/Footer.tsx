@@ -11,7 +11,7 @@ export default function Footer() {
         <footer className="footer" role="contentinfo">
             <div className="footer-content">
                 <div style={{ marginBottom: '1rem' }}>
-                    <img src="/utsyn_logo.png" alt="Restaurant Utsyn" style={{ height: '60px', width: 'auto' }} />
+                    <img src="/utsyn_logo.png" alt="Restaurant Utsyn" style={{ height: '160px', width: 'auto' }} />
                 </div>
                 <p>{t('footer_school')}</p>
                 <p>© {year} Restaurant Utsyn. {t('footer_rights')}.</p>
