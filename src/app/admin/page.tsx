@@ -92,7 +92,7 @@ export default function AdminPage() {
         <div className="login-page">
             <div className="login-card">
                 <div style={{ textAlign: 'center', marginBottom: 'var(--space-lg)' }}>
-                    <img src="/utsyn_logo.png" alt="Restaurant Utsyn" style={{ height: '80px', width: 'auto', margin: '0 auto var(--space-md)' }} />
+                    <img src="/utsyn_logo.png" alt="Restaurant Utsyn" style={{ height: '160px', width: 'auto', margin: '0 auto var(--space-md)' }} />
                 </div>
 
                 {needsSetup ? (
