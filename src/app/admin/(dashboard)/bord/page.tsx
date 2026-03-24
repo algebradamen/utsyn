@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
-import { IconCheck, IconX } from '@/components/Icons';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { IconCheck, IconX, IconHourglass, IconWrench, IconSave, IconCalendar } from '@/components/Icons';
 
 interface Table {
     id: number;
@@ -28,70 +28,65 @@ interface TableAssignment {
     guests_count: number;
 }
 
+interface TablePosition {
+    x: number;
+    y: number;
+    rotate?: number;
+}
+
 // Helper: get local date as YYYY-MM-DD without UTC conversion
 function getLocalDateStr(date?: Date): string {
     const d = date || new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-// Table positions matching the actual floor plan
-// Coordinates are in percentages of the floor-plan container
-const tablePositions: Record<number, {x: number, y: number, rotate?: number}> = {
-    // Left column against wall
-    24: { x: 10, y: 10 },
-    25: { x: 18, y: 10 },
-    26: { x: 26, y: 10 },
-    27: { x: 34, y: 10 },
-    28: { x: 42, y: 10 },
-
-    20: { x: 10, y: 16 },
-    21: { x: 18, y: 16 },
-    22: { x: 26, y: 16 },
+// Default table positions matching the actual floor plan
+const defaultTablePositions: Record<number, TablePosition> = {
+    24: { x: 10, y: 10 }, 25: { x: 18, y: 10 }, 26: { x: 26, y: 10 },
+    27: { x: 34, y: 10 }, 28: { x: 42, y: 10 },
+    20: { x: 10, y: 16 }, 21: { x: 18, y: 16 }, 22: { x: 26, y: 16 },
     23: { x: 34, y: 16 },
-
-    17: { x: 10, y: 23 },
-    18: { x: 18, y: 23 },
-    19: { x: 26, y: 23 },
-
-    14: { x: 10, y: 34 },
-    15: { x: 18, y: 34 },
-    16: { x: 26, y: 34 },
-
-    11: { x: 10, y: 42 },
-    12: { x: 18, y: 42 },
-    13: { x: 26, y: 42 },
-
-    8:  { x: 10, y: 53 },
-    9:  { x: 18, y: 53 },
-    10: { x: 48, y: 53 },
-
-    5:  { x: 10, y: 61 },
-    6:  { x: 18, y: 61 },
-    7:  { x: 48, y: 58 },
-
-    3:  { x: 10, y: 72 },
-    4:  { x: 18, y: 72 },
-
-    1:  { x: 10, y: 79 },
-    2:  { x: 18, y: 79 },
-
-    // Middle angled
+    17: { x: 10, y: 23 }, 18: { x: 18, y: 23 }, 19: { x: 26, y: 23 },
+    14: { x: 10, y: 34 }, 15: { x: 18, y: 34 }, 16: { x: 26, y: 34 },
+    11: { x: 10, y: 42 }, 12: { x: 18, y: 42 }, 13: { x: 26, y: 42 },
+    8: { x: 10, y: 53 }, 9: { x: 18, y: 53 }, 10: { x: 48, y: 53 },
+    5: { x: 10, y: 61 }, 6: { x: 18, y: 61 }, 7: { x: 48, y: 58 },
+    3: { x: 10, y: 72 }, 4: { x: 18, y: 72 },
+    1: { x: 10, y: 79 }, 2: { x: 18, y: 79 },
     29: { x: 49, y: 25, rotate: 45 },
-
-    // Top right rooms
-    32: { x: 70, y: 5 },
-    31: { x: 70, y: 10 },
-    30: { x: 70, y: 15 },
+    32: { x: 70, y: 5 }, 31: { x: 70, y: 10 }, 30: { x: 70, y: 15 },
 };
 
-// Pillar positions (S circles on the floor plan)
-const pillarPositions = [
-    { x: 9, y: 5 },   // Above 24
-    { x: 9, y: 28 },  // Above 14
-    { x: 9, y: 47 },  // Above 8
-    { x: 9, y: 66 },  // Above 3
-    { x: 9, y: 84 },  // Below 1
+// Default pillar positions
+const defaultPillarPositions = [
+    { x: 9, y: 5 }, { x: 9, y: 28 }, { x: 9, y: 47 },
+    { x: 9, y: 66 }, { x: 9, y: 84 },
 ];
+
+// Load layout from localStorage
+function loadLayout(dateKey?: string): Record<number, TablePosition> | null {
+    try {
+        // Try date-specific layout first
+        if (dateKey) {
+            const dayLayout = localStorage.getItem(`utsyn_layout_${dateKey}`);
+            if (dayLayout) return JSON.parse(dayLayout);
+        }
+        // Fall back to permanent layout
+        const permLayout = localStorage.getItem('utsyn_layout_permanent');
+        if (permLayout) return JSON.parse(permLayout);
+    } catch { /* ignore */ }
+    return null;
+}
+
+function saveLayout(positions: Record<number, TablePosition>, mode: 'permanent' | 'day', dateKey?: string) {
+    try {
+        if (mode === 'permanent') {
+            localStorage.setItem('utsyn_layout_permanent', JSON.stringify(positions));
+        } else if (dateKey) {
+            localStorage.setItem(`utsyn_layout_${dateKey}`, JSON.stringify(positions));
+        }
+    } catch { /* ignore */ }
+}
 
 export default function BordPage() {
     const [tables, setTables] = useState<Table[]>([]);
@@ -106,6 +101,24 @@ export default function BordPage() {
     const [editCapacity, setEditCapacity] = useState(4);
     const [editIsActive, setEditIsActive] = useState(true);
     const [datesWithReservations, setDatesWithReservations] = useState<string[]>([]);
+    const [initialLoadDone, setInitialLoadDone] = useState(false);
+
+    // Floor plan editor state
+    const [editMode, setEditMode] = useState(false);
+    const [tablePositions, setTablePositions] = useState<Record<number, TablePosition>>({ ...defaultTablePositions });
+    const [dragging, setDragging] = useState<{ id: number; offsetX: number; offsetY: number } | null>(null);
+    const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+    const floorPlanRef = useRef<HTMLDivElement>(null);
+
+    // Load layout on mount and when date changes
+    useEffect(() => {
+        const saved = loadLayout(filterDate);
+        if (saved) {
+            setTablePositions(saved);
+        } else {
+            setTablePositions({ ...defaultTablePositions });
+        }
+    }, [filterDate]);
 
     // Fetch all reservations to find dates that have reservations
     const fetchAllReservations = useCallback(async () => {
@@ -113,9 +126,9 @@ export default function BordPage() {
             const res = await fetch('/api/reservations');
             const data = await res.json();
             if (Array.isArray(data)) {
-                setAllReservations(data.filter((r: Reservation) => r.status === 'confirmed' || r.status === 'completed'));
+                setAllReservations(data.filter((r: Reservation) => r.status !== 'cancelled'));
                 const dates = [...new Set(data
-                    .filter((r: Reservation) => r.status === 'confirmed' || r.status === 'completed')
+                    .filter((r: Reservation) => r.status !== 'cancelled')
                     .map((r: Reservation) => r.date)
                 )] as string[];
                 setDatesWithReservations(dates.sort());
@@ -132,16 +145,19 @@ export default function BordPage() {
                 fetch(`/api/reservations?date=${filterDate}`),
                 fetch(`/api/tables/assignments?date=${filterDate}`)
             ]);
-            
+
             setTables(await tablesRes.json());
-            
+
             const fetchedRes = await resRes.json();
             if (Array.isArray(fetchedRes)) {
-                setReservations(fetchedRes.filter((r: Reservation) => r.status === 'confirmed' || r.status === 'completed'));
+                // Include needs_seat, confirmed, and completed reservations
+                setReservations(fetchedRes.filter((r: Reservation) =>
+                    r.status === 'confirmed' || r.status === 'completed' || r.status === 'needs_seat'
+                ));
             } else {
                 setReservations([]);
             }
-            
+
             const fetchedAssign = await assignRes.json();
             if (Array.isArray(fetchedAssign)) {
                 setAssignments(fetchedAssign);
@@ -163,17 +179,24 @@ export default function BordPage() {
         fetchData();
     }, [fetchData]);
 
-    // Auto-navigate to next date with reservations if today has none
+    // Clear selected reservation when date changes to avoid stale data
     useEffect(() => {
-        if (!loading && reservations.length === 0 && datesWithReservations.length > 0) {
+        setSelectedReservation(null);
+    }, [filterDate]);
+
+    // Auto-navigate to next date with reservations ONLY on initial load
+    useEffect(() => {
+        if (!loading && !initialLoadDone && reservations.length === 0 && datesWithReservations.length > 0) {
             const today = getLocalDateStr();
-            // Find the next date with reservations (today or future)
             const nextDate = datesWithReservations.find(d => d >= today);
             if (nextDate && nextDate !== filterDate) {
                 setFilterDate(nextDate);
             }
+            setInitialLoadDone(true);
+        } else if (!loading && !initialLoadDone) {
+            setInitialLoadDone(true);
         }
-    }, [loading, reservations.length, datesWithReservations, filterDate]);
+    }, [loading, initialLoadDone, reservations.length, datesWithReservations, filterDate]);
 
     const showToast = (msg: string) => {
         setToast(msg);
@@ -181,8 +204,10 @@ export default function BordPage() {
     };
 
     const toggleAssignment = async (tableId: number) => {
+        if (editMode) return; // Don't assign in edit mode
+
         const table = tables.find(t => t.id === tableId);
-        
+
         if (!selectedReservation) {
             setEditingTable(table || null);
             setEditCapacity(table?.capacity || 4);
@@ -207,11 +232,13 @@ export default function BordPage() {
                     body: JSON.stringify({ reservation_id: selectedReservation.id, table_id: tableId })
                 });
                 if (!res.ok) {
-                    showToast('Kunne ikke tildele bord');
+                    const data = await res.json();
+                    showToast(data.error || 'Kunne ikke tildele bord');
                     return;
                 }
             }
             fetchData();
+            fetchAllReservations();
         } catch (err) {
             console.error(err);
         }
@@ -241,12 +268,79 @@ export default function BordPage() {
             if (res.ok) {
                 showToast('Reservasjon bekreftet og SMS sendt!');
                 fetchData();
+                fetchAllReservations();
             } else {
                 showToast('Kunne ikke bekrefte reservasjonen.');
             }
         } catch (err) {
             console.error(err);
         }
+    };
+
+    // --- Floor Plan Editor Handlers ---
+    const handleMouseDown = (e: React.MouseEvent, tableId: number) => {
+        if (!editMode) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const rect = floorPlanRef.current?.getBoundingClientRect();
+        if (!rect) return;
+        const pos = tablePositions[tableId];
+        if (!pos) return;
+        const currentX = (pos.x / 100) * rect.width;
+        const currentY = (pos.y / 100) * rect.height;
+        setDragging({ id: tableId, offsetX: e.clientX - rect.left - currentX, offsetY: e.clientY - rect.top - currentY });
+    };
+
+    const handleMouseMove = useCallback((e: MouseEvent) => {
+        if (!dragging || !floorPlanRef.current) return;
+        const rect = floorPlanRef.current.getBoundingClientRect();
+        const newX = ((e.clientX - rect.left - dragging.offsetX) / rect.width) * 100;
+        const newY = ((e.clientY - rect.top - dragging.offsetY) / rect.height) * 100;
+        const clampedX = Math.max(2, Math.min(98, newX));
+        const clampedY = Math.max(2, Math.min(98, newY));
+        setTablePositions(prev => ({
+            ...prev,
+            [dragging.id]: { ...prev[dragging.id], x: Math.round(clampedX * 10) / 10, y: Math.round(clampedY * 10) / 10 }
+        }));
+    }, [dragging]);
+
+    const handleMouseUp = useCallback(() => {
+        setDragging(null);
+    }, []);
+
+    useEffect(() => {
+        if (editMode) {
+            window.addEventListener('mousemove', handleMouseMove);
+            window.addEventListener('mouseup', handleMouseUp);
+            return () => {
+                window.removeEventListener('mousemove', handleMouseMove);
+                window.removeEventListener('mouseup', handleMouseUp);
+            };
+        }
+    }, [editMode, handleMouseMove, handleMouseUp]);
+
+    const handleSaveLayout = (mode: 'permanent' | 'day') => {
+        saveLayout(tablePositions, mode, mode === 'day' ? filterDate : undefined);
+        setSaveDialogOpen(false);
+        setEditMode(false);
+        showToast(mode === 'permanent' ? 'Planløsning lagret permanent!' : `Planløsning lagret for ${formatDatePretty(filterDate)}`);
+    };
+
+    const handleResetLayout = () => {
+        setTablePositions({ ...defaultTablePositions });
+        // Remove any saved layouts
+        try {
+            localStorage.removeItem('utsyn_layout_permanent');
+            localStorage.removeItem(`utsyn_layout_${filterDate}`);
+        } catch { /* ignore */ }
+        showToast('Planløsning tilbakestilt til standard');
+    };
+
+    const handleRotateTable = (tableId: number) => {
+        setTablePositions(prev => ({
+            ...prev,
+            [tableId]: { ...prev[tableId], rotate: ((prev[tableId]?.rotate || 0) + 45) % 360 }
+        }));
     };
 
     if (loading) return <div className="loading"><div className="spinner" /></div>;
@@ -256,15 +350,15 @@ export default function BordPage() {
         if (table && table.is_active === 0) return 'inactive';
 
         const tableAssignments = assignments.filter(a => a.table_id === tableId);
-        
+
         if (selectedReservation) {
             const isSelected = tableAssignments.some(a => a.reservation_id === selectedReservation.id);
             if (isSelected) return 'selected';
-            
+
             const isOccupied = tableAssignments.some(a => a.time_slot === selectedReservation.time_slot);
             if (isOccupied) return 'occupied';
         }
-        
+
         if (tableAssignments.length > 0) return 'has-reservations';
         return 'free';
     };
@@ -287,10 +381,10 @@ export default function BordPage() {
                 <h1 className="admin-title">Bordkart & Tildeling</h1>
                 <div style={{ display: 'flex', gap: 'var(--space-sm)', alignItems: 'center', flexWrap: 'wrap' }}>
                     <label>Dato:</label>
-                    <input 
-                        type="date" 
-                        className="form-input" 
-                        value={filterDate} 
+                    <input
+                        type="date"
+                        className="form-input"
+                        value={filterDate}
                         onChange={e => setFilterDate(e.target.value)}
                         style={{ width: 'auto', padding: 'var(--space-xs) var(--space-sm)', minHeight: 'auto' }}
                     />
@@ -320,7 +414,7 @@ export default function BordPage() {
                     <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-md)' }}>
                         Velg en reservasjon for å tildele bord. Klikk på et bord for å endre antall plasser.
                     </p>
-                    
+
                     <div className="reservations-list">
                         {reservations.length === 0 ? (
                             <div className="empty-state" style={{ padding: 'var(--space-lg)' }}>
@@ -339,12 +433,13 @@ export default function BordPage() {
                                     const t = tables.find(tbl => tbl.id === a.table_id);
                                     return sum + (t?.capacity || 0);
                                 }, 0);
-                                
+
                                 const statusClass = totalCapacity >= r.guests_count ? 'status-ok' : (totalCapacity > 0 ? 'status-partial' : 'status-none');
-                                
+                                const canConfirm = totalCapacity >= r.guests_count && assignedTables.length > 0 && r.status === 'needs_seat';
+
                                 return (
-                                    <div 
-                                        key={r.id} 
+                                    <div
+                                        key={r.id}
                                         className={`reservation-card ${isSelected ? 'selected' : ''}`}
                                         onClick={() => setSelectedReservation(isSelected ? null : r)}
                                     >
@@ -356,14 +451,19 @@ export default function BordPage() {
                                         </div>
                                         <div className="res-card-name">{r.guest_name}</div>
                                         <div className="res-card-guests">{r.guests_count} gjester</div>
+                                        <div className="res-card-status">
+                                            <span className={`status-badge-mini status-${r.status}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                                {r.status === 'needs_seat' ? <><IconHourglass size={14} /> Trenger bord</> : r.status === 'confirmed' ? <><IconCheck size={14} /> Bekreftet</> : <><IconCheck size={14} /> Fullført</>}
+                                            </span>
+                                        </div>
                                         {assignedTables.length > 0 && (
                                             <div className="res-card-tables">
                                                 Bord: {assignedTables.map(a => tables.find(t => t.id === a.table_id)?.name).filter(Boolean).join(', ')}
                                             </div>
                                         )}
-                                        {r.status === 'needs_seat' && totalCapacity >= r.guests_count && (
+                                        {canConfirm && (
                                             <div style={{ marginTop: 'var(--space-md)' }}>
-                                                <button 
+                                                <button
                                                     className="btn btn-primary btn-sm"
                                                     style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '5px' }}
                                                     onClick={(e) => {
@@ -384,41 +484,74 @@ export default function BordPage() {
 
                 {/* Main floor plan */}
                 <div className="floor-plan-container">
-                    <div className="floor-plan-legend">
-                        <div className="legend-item"><span className="legend-box free"></span> Ledig</div>
-                        <div className="legend-item"><span className="legend-box occupied"></span> Opptatt på valgt tid</div>
-                        <div className="legend-item"><span className="legend-box has-reservations"></span> Har reservasjoner</div>
-                        <div className="legend-item"><span className="legend-box selected-legend"></span> Valgt for gjest</div>
+                    {/* Editor toolbar */}
+                    <div className="floor-plan-toolbar">
+                        <div className="floor-plan-legend">
+                            <div className="legend-item"><span className="legend-box free"></span> Ledig</div>
+                            <div className="legend-item"><span className="legend-box occupied"></span> Opptatt på valgt tid</div>
+                            <div className="legend-item"><span className="legend-box has-reservations"></span> Har reservasjoner</div>
+                            <div className="legend-item"><span className="legend-box selected-legend"></span> Valgt for gjest</div>
+                        </div>
+                        <div className="floor-plan-actions">
+                            {editMode && (
+                                <>
+                                    <button
+                                        className="btn btn-ghost btn-sm editor-btn"
+                                        onClick={handleResetLayout}
+                                        title="Tilbakestill planløsning"
+                                    >
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <polyline points="1 4 1 10 7 10"></polyline>
+                                            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                                        </svg>
+                                    </button>
+                                    <button
+                                        className="btn btn-primary btn-sm editor-btn"
+                                        onClick={() => setSaveDialogOpen(true)}
+                                        title="Lagre planløsning"
+                                    >
+                                        <IconCheck size={18} />
+                                    </button>
+                                </>
+                            )}
+                            {!editMode && (
+                                <button
+                                    className="btn btn-ghost btn-sm editor-btn"
+                                    onClick={() => setEditMode(true)}
+                                    title="Rediger planløsning"
+                                >
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                    </svg>
+                                </button>
+                            )}
+                        </div>
                     </div>
 
-                    <div className="floor-plan">
+                    {editMode && (
+                        <div className="editor-hint" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <IconWrench size={18} /> Redigeringsmodus: Dra bordene for å flytte dem. Høyreklikk for å rotere.
+                        </div>
+                    )}
+
+                    <div className="floor-plan" ref={floorPlanRef}>
                         {/* SVG walls and structural elements */}
                         <svg className="floor-plan-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
-                            {/* Left wall */}
-                            <line x1="6" y1="2" x2="6" y2="94" stroke="#c0c9d6" strokeWidth="0.6"/>
-                            {/* Bottom wall */}
-                            <line x1="6" y1="94" x2="40" y2="94" stroke="#c0c9d6" strokeWidth="0.6"/>
-                            {/* Top wall - main area and right room */}
-                            <line x1="6" y1="2" x2="97" y2="2" stroke="#c0c9d6" strokeWidth="0.6"/>
-                            
-                            {/* Bottom wall of right room */}
-                            <line x1="60" y1="30" x2="97" y2="30" stroke="#c0c9d6" strokeWidth="0.6"/>
-                            
-                            {/* Inner divider (corridor) */}
-                            <path d="M 52 94 L 52 40 Q 52 30 60 30" stroke="#c0c9d6" strokeWidth="0.6" fill="none"/>
-                            
-                            {/* Vertical wall left for tables 30-32 */}
-                            <line x1="80" y1="2" x2="80" y2="10" stroke="#c0c9d6" strokeWidth="0.6"/>
-                            <line x1="80" y1="30" x2="80" y2="15" stroke="#c0c9d6" strokeWidth="0.6"/>
-                            
-                            {/* Partitions against middle wall */}
+                            <line x1="6" y1="2" x2="6" y2="94" stroke="#c0c9d6" strokeWidth="0.6" />
+                            <line x1="6" y1="94" x2="40" y2="94" stroke="#c0c9d6" strokeWidth="0.6" />
+                            <line x1="6" y1="2" x2="97" y2="2" stroke="#c0c9d6" strokeWidth="0.6" />
+                            <line x1="60" y1="30" x2="97" y2="30" stroke="#c0c9d6" strokeWidth="0.6" />
+                            <path d="M 52 94 L 52 40 Q 52 30 60 30" stroke="#c0c9d6" strokeWidth="0.6" fill="none" />
+                            <line x1="80" y1="2" x2="80" y2="10" stroke="#c0c9d6" strokeWidth="0.6" />
+                            <line x1="80" y1="30" x2="80" y2="15" stroke="#c0c9d6" strokeWidth="0.6" />
                             <rect x="50.5" y="37" width="1.1" height="5" fill="#aebac9" stroke="#8b9bac" strokeWidth="0.3" rx="0.3" />
                             <rect x="49.5" y="67" width="2.5" height="13" fill="#aebac9" stroke="#8b9bac" strokeWidth="0.3" rx="0.3" />
                             <rect x="50.5" y="83" width="1.1" height="8" fill="#aebac9" stroke="#8b9bac" strokeWidth="0.3" rx="0.3" />
                         </svg>
 
-                        {/* Pillars (S circles) */}
-                        {pillarPositions.map((p, i) => (
+                        {/* Pillars */}
+                        {defaultPillarPositions.map((p, i) => (
                             <div
                                 key={`pillar-${i}`}
                                 className="map-pillar"
@@ -428,7 +561,7 @@ export default function BordPage() {
                             </div>
                         ))}
 
-                        {/* Kasse (register) */}
+                        {/* Kasse */}
                         <div className="map-kasse" style={{ left: '8.4%', top: '89.5%' }}>Kasse</div>
 
                         {/* Table nodes */}
@@ -436,21 +569,34 @@ export default function BordPage() {
                             const status = getTableStatus(table.id);
                             const pos = tablePositions[table.id];
                             if (!pos) return null;
-                            
-                            const transformStyle = pos.rotate ? `rotate(${pos.rotate}deg)` : 'none';
-                            
+
+                            const rotateVal = pos.rotate || 0;
+                            const transformStyle = rotateVal ? `rotate(${rotateVal}deg)` : 'none';
+
                             return (
                                 <button
                                     key={table.id}
-                                    className={`table-node node-${status}`}
-                                    style={{ left: `${pos.x}%`, top: `${pos.y}%`, transform: transformStyle }}
-                                    onClick={() => toggleAssignment(table.id)}
-                                    title={`Bord ${table.name} (${table.capacity} plasser)`}
+                                    className={`table-node node-${status} ${editMode ? 'edit-mode' : ''} ${dragging?.id === table.id ? 'dragging' : ''}`}
+                                    style={{
+                                        left: `${pos.x}%`,
+                                        top: `${pos.y}%`,
+                                        transform: transformStyle,
+                                        cursor: editMode ? 'grab' : 'pointer'
+                                    }}
+                                    onClick={() => !editMode && toggleAssignment(table.id)}
+                                    onMouseDown={(e) => editMode && handleMouseDown(e, table.id)}
+                                    onContextMenu={(e) => {
+                                        if (editMode) {
+                                            e.preventDefault();
+                                            handleRotateTable(table.id);
+                                        }
+                                    }}
+                                    title={editMode ? `Bord ${table.name} — Dra for å flytte, høyreklikk for å rotere` : `Bord ${table.name} (${table.capacity} plasser)`}
                                 >
-                                    <span className="table-name" style={{ transform: pos.rotate ? `rotate(-${pos.rotate}deg)` : 'none' }}>
+                                    <span className="table-name" style={{ transform: rotateVal ? `rotate(-${rotateVal}deg)` : 'none' }}>
                                         {table.name}
                                     </span>
-                                    {assignments.filter(a => a.table_id === table.id).length > 0 && (
+                                    {!editMode && assignments.filter(a => a.table_id === table.id).length > 0 && (
                                         <div className="table-tooltip">
                                             {assignments.filter(a => a.table_id === table.id).map(a => (
                                                 <div key={a.id}>{a.time_slot}: {a.guest_name} ({a.guests_count}p)</div>
@@ -471,20 +617,20 @@ export default function BordPage() {
                         <h3>Rediger Bord {editingTable.name}</h3>
                         <div className="form-group" style={{ marginTop: 'var(--space-md)' }}>
                             <label className="form-label">Antall plasser</label>
-                            <input 
-                                type="number" 
-                                className="form-input" 
-                                value={editCapacity} 
+                            <input
+                                type="number"
+                                className="form-input"
+                                value={editCapacity}
                                 onChange={e => setEditCapacity(parseInt(e.target.value) || 1)}
                                 min={1}
                                 max={20}
                             />
                         </div>
                         <div className="form-group" style={{ marginTop: 'var(--space-md)', display: 'flex', alignItems: 'center', gap: 'var(--space-sm)' }}>
-                            <input 
-                                type="checkbox" 
+                            <input
+                                type="checkbox"
                                 id="is_active_check"
-                                checked={editIsActive} 
+                                checked={editIsActive}
                                 onChange={e => setEditIsActive(e.target.checked)}
                             />
                             <label htmlFor="is_active_check" className="form-label" style={{ marginBottom: 0 }}>Bordet er aktivt (kan tildeles gjester)</label>
@@ -497,10 +643,55 @@ export default function BordPage() {
                 </div>
             )}
 
+            {/* Save layout dialog */}
+            {saveDialogOpen && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <h3>Lagre planløsning</h3>
+                        <p style={{ color: 'var(--color-text-secondary)', marginTop: 'var(--space-md)', marginBottom: 'var(--space-xl)' }}>
+                            Vil du lagre denne planløsningen kun for {formatDatePretty(filterDate)}, eller som standard for alle dager?
+                        </p>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-md)' }}>
+                            <button
+                                className="btn btn-primary"
+                                onClick={() => handleSaveLayout('permanent')}
+                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', padding: '12px var(--space-md)' }}
+                            >
+                                <IconSave size={24} />
+                                <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'left', lineHeight: '1.2' }}>
+                                    <span>Lagre permanent</span>
+                                    <span style={{ fontSize: '0.85em', opacity: 0.9, fontWeight: 'normal' }}>(alle dager)</span>
+                                </div>
+                            </button>
+                            <button
+                                className="btn btn-secondary"
+                                onClick={() => handleSaveLayout('day')}
+                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', padding: '12px var(--space-md)' }}
+                            >
+                                <IconCalendar size={24} />
+                                <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'left', lineHeight: '1.2' }}>
+                                    <span>Lagre for i dag</span>
+                                    <span style={{ fontSize: '0.85em', opacity: 0.9, fontWeight: 'normal' }}>{formatDatePretty(filterDate)}</span>
+                                </div>
+                            </button>
+                        </div>
+                        <div style={{ marginTop: 'var(--space-md)', textAlign: 'center' }}>
+                            <button
+                                className="btn btn-ghost"
+                                style={{ width: '100%' }}
+                                onClick={() => setSaveDialogOpen(false)}
+                            >
+                                Avbryt
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className={`toast ${toast ? 'show' : ''}`} role="status" aria-live="polite">
                 {toast}
             </div>
-            
+
             <style jsx>{`
                 .quick-dates {
                     display: flex;
@@ -609,6 +800,32 @@ export default function BordPage() {
                     color: var(--color-text-secondary);
                 }
                 
+                .res-card-status {
+                    margin-top: var(--space-xs);
+                }
+
+                .status-badge-mini {
+                    font-size: 11px;
+                    padding: 2px 6px;
+                    border-radius: var(--radius-sm);
+                    font-weight: 600;
+                }
+
+                .status-badge-mini.status-needs_seat {
+                    background: #fef3c7;
+                    color: #92400e;
+                }
+
+                .status-badge-mini.status-confirmed {
+                    background: #d1fae5;
+                    color: #065f46;
+                }
+
+                .status-badge-mini.status-completed {
+                    background: #dbeafe;
+                    color: #1e40af;
+                }
+                
                 .res-card-tables {
                     margin-top: var(--space-xs);
                     font-size: var(--font-size-sm);
@@ -634,11 +851,47 @@ export default function BordPage() {
                     border: 1px solid var(--color-border-light);
                     min-height: 600px;
                 }
+
+                .floor-plan-toolbar {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: flex-start;
+                    margin-bottom: var(--space-lg);
+                    gap: var(--space-md);
+                    flex-wrap: wrap;
+                }
+
+                .floor-plan-actions {
+                    display: flex;
+                    gap: var(--space-sm);
+                    align-items: center;
+                    flex-shrink: 0;
+                }
+
+                .editor-btn {
+                    width: 38px;
+                    height: 38px;
+                    padding: 0;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: var(--radius-md);
+                }
+
+                .editor-hint {
+                    background: #fef3c7;
+                    color: #92400e;
+                    padding: var(--space-sm) var(--space-md);
+                    border-radius: var(--radius-md);
+                    font-size: var(--font-size-sm);
+                    font-weight: 500;
+                    margin-bottom: var(--space-md);
+                    border: 1px solid #fcd34d;
+                }
                 
                 .floor-plan-legend {
                     display: flex;
                     gap: var(--space-lg);
-                    margin-bottom: var(--space-xl);
                     flex-wrap: wrap;
                 }
                 
@@ -746,6 +999,22 @@ export default function BordPage() {
                 .table-node[style*="rotate"]:hover {
                     z-index: 10;
                 }
+
+                .table-node.edit-mode {
+                    cursor: grab;
+                    border-style: dashed;
+                }
+
+                .table-node.edit-mode:hover {
+                    box-shadow: 0 0 0 3px #fbbf24, 0 2px 8px rgba(0,0,0,0.15);
+                }
+
+                .table-node.dragging {
+                    cursor: grabbing;
+                    opacity: 0.8;
+                    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+                    z-index: 100;
+                }
                 
                 .node-free { }
                 .node-occupied { background: var(--color-full); border-color: var(--color-error); color: var(--color-full-text); }
@@ -797,7 +1066,7 @@ export default function BordPage() {
                     border-radius: var(--radius-lg);
                     box-shadow: var(--shadow-xl);
                     width: 100%;
-                    max-width: 400px;
+                    max-width: 520px;
                 }
             `}</style>
         </>

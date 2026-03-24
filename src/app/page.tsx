@@ -22,9 +22,9 @@ function HomePage() {
   const [menuCategories, setMenuCategories] = useState<any[]>([]);
 
   useEffect(() => {
-    fetch('/api/settings').then(r => r.json()).then(setSettings).catch(console.error);
-    fetch('/api/open-days').then(r => r.json()).then(setOpenDays).catch(console.error);
-    fetch('/api/menu').then(r => r.json()).then(data => {
+    fetch('/api/settings', { cache: 'no-store' }).then(r => r.json()).then(setSettings).catch(console.error);
+    fetch('/api/open-days', { cache: 'no-store' }).then(r => r.json()).then(setOpenDays).catch(console.error);
+    fetch('/api/menu', { cache: 'no-store' }).then(r => r.json()).then(data => {
       if (Array.isArray(data)) setMenuCategories(data);
     }).catch(console.error);
   }, []);
@@ -240,7 +240,7 @@ function HomePage() {
               {/* Row 6 */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2xl)', flexWrap: 'wrap', flexDirection: 'row-reverse' }} className="animate-in slide-in-right">
                 <div style={{ flex: '1 1 400px', borderRadius: 'var(--radius-lg)', overflow: 'hidden', boxShadow: 'var(--shadow-lg)' }}>
-                  <img src="/roast_beef_sandwiches.jpg" alt={locale === 'no' ? "Smørbrødbrett" : "Sandwich platter"} style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'cover', aspectRatio: '4/3' }} />
+                  <img src="/ready_table.png" alt={locale === 'no' ? "Smørbrødbrett" : "Sandwich platter"} style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'cover', aspectRatio: '4/3' }} />
                 </div>
                 <div style={{ flex: '1 1 400px' }}>
                   <h3 style={{ fontSize: 'var(--font-size-xl)', marginBottom: 'var(--space-md)' }}>

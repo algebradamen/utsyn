@@ -54,7 +54,7 @@ function BookingWizard() {
     const [emailError, setEmailError] = useState('');
 
     useEffect(() => {
-        fetch('/api/open-days').then(r => r.json()).then(setOpenDays).catch(console.error);
+        fetch('/api/open-days', { cache: 'no-store' }).then(r => r.json()).then(setOpenDays).catch(console.error);
     }, []);
 
     const fetchAvailability = useCallback(async (date: string) => {

@@ -42,7 +42,7 @@ export default function Dashboard() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetch('/api/reservations')
+        fetch('/api/reservations', { cache: 'no-store' })
             .then(r => r.json())
             .then(data => {
                 if (Array.isArray(data)) {

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useCallback } from 'react';
+import { IconClipboard } from '@/components/Icons';
 
 interface Reservation {
   id: number;
@@ -135,7 +136,7 @@ export default function ReservasjonerPage() {
 
       {reservations.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-state-icon">📋</div>
+          <div className="empty-state-icon"><IconClipboard size={48} /></div>
           <p>Ingen reservasjoner funnet.</p>
         </div>
       ) : (

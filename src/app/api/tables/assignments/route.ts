@@ -41,6 +41,31 @@ export async function POST(request: NextRequest) {
         }
 
         const db = getDb();
+
+        // Get the reservation's time_slot and date
+        const reservation = db.prepare('SELECT date, time_slot FROM reservations WHERE id = ?').get(reservation_id) as { date: string; time_slot: string } | undefined;
+        if (!reservation) {
+            return NextResponse.json({ error: 'Reservation not found' }, { status: 404 });
+        }
+
+        // Check if this table is already assigned to another reservation at the same date+time
+        const conflict = db.prepare(`
+            SELECT ta.id, r.guest_name, r.time_slot 
+            FROM table_assignments ta
+            JOIN reservations r ON ta.reservation_id = r.id
+            WHERE ta.table_id = ? 
+              AND r.date = ? 
+              AND r.time_slot = ? 
+              AND r.id != ?
+              AND r.status != 'cancelled'
+        `).get(table_id, reservation.date, reservation.time_slot, reservation_id) as any;
+
+        if (conflict) {
+            return NextResponse.json({ 
+                error: `Bord er allerede tildelt ${conflict.guest_name} kl ${conflict.time_slot}` 
+            }, { status: 409 });
+        }
+
         try {
             db.prepare('INSERT INTO table_assignments (reservation_id, table_id) VALUES (?, ?)').run(reservation_id, table_id);
             checkAndUpdateReservationStatus(db, reservation_id);

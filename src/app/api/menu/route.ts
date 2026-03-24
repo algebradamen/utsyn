@@ -7,12 +7,21 @@ export async function GET() {
         const categories = db.prepare('SELECT * FROM menu_categories ORDER BY sort_order').all() as any[];
         const items = db.prepare('SELECT * FROM menu_items').all() as any[];
 
+        const itemsByCategory = new Map<number, any[]>();
+        for (const item of items) {
+            const list = itemsByCategory.get(item.category_id) || [];
+            list.push(item);
+            itemsByCategory.set(item.category_id, list);
+        }
+
         const menuWithItems = categories.map(cat => ({
             ...cat,
-            items: items.filter(item => item.category_id === cat.id)
+            items: itemsByCategory.get(cat.id) || []
         }));
 
-        return NextResponse.json(menuWithItems);
+        return NextResponse.json(menuWithItems, {
+            headers: { 'Cache-Control': 'no-store, max-age=0' }
+        });
     } catch (error) {
         console.error('Menu GET error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -23,8 +32,11 @@ export async function POST(request: NextRequest) {
     try {
         const { getAuthUser } = await import('@/lib/auth');
         const user = await getAuthUser();
-        if (!user || user.role !== 'admin') {
+        if (!user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+        if (user.role !== 'admin') {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
         const body = await request.json();

@@ -2,13 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import getDb from '@/lib/db';
 import { sendSms } from '@/lib/sms';
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         const { getAuthUser } = await import('@/lib/auth');
         const user = await getAuthUser();
         if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-        const { id } = params;
+        const { id } = await params;
         const db = getDb();
         
         const res = db.prepare('SELECT phone, date, time_slot, guests_count, status, confirmation_code FROM reservations WHERE id = ?').get(id) as any;

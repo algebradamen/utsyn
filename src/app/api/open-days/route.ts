@@ -5,7 +5,9 @@ export async function GET() {
     try {
         const db = getDb();
         const days = db.prepare('SELECT * FROM open_days ORDER BY day_of_week').all();
-        return NextResponse.json(days);
+        return NextResponse.json(days, {
+            headers: { 'Cache-Control': 'no-store, max-age=0' }
+        });
     } catch (error) {
         console.error('Open days GET error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

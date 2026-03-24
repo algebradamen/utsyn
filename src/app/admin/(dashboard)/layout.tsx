@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { IconChartBar, IconClipboard, IconSettings, IconUsers, IconLogOut, IconCalendar, IconGrid } from '@/components/Icons';
+import A11yToolbar from '@/components/A11yToolbar';
 
 interface User {
   userId: number;
@@ -116,6 +117,7 @@ export default function AdminDashboardLayout({ children }: { children: React.Rea
           {children}
         </main>
       </div>
+      <A11yToolbar />
     </>
   );
 }

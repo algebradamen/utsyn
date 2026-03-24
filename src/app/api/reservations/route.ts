@@ -134,10 +134,10 @@ export async function POST(request: NextRequest) {
             attempts++;
         } while (attempts < 10);
 
-        // Insert reservation
+        // Insert reservation with 'needs_seat' status - admin must assign tables and confirm
         const result = db.prepare(`
       INSERT INTO reservations (guest_name, phone, email, guests_count, date, time_slot, comment, status, confirmation_code)
-      VALUES (?, ?, ?, ?, ?, ?, ?, 'confirmed', ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, 'needs_seat', ?)
     `).run(
             sanitizeInput(guest_name),
             sanitizeInput(phone),
@@ -149,10 +149,7 @@ export async function POST(request: NextRequest) {
             confirmationCode
         );
 
-        // Check and update status based on table assignments (will set to 'needs_seat' if no tables assigned)
-        checkAndUpdateReservationStatus(db, Number(result.lastInsertRowid));
-
-        // SMS webhook (if configured)
+        // SMS notification for received booking (if configured)
         try {
             const templateRow = db.prepare('SELECT value FROM settings WHERE key = ?').get('sms_template_received') as { value: string } | undefined;
             if (templateRow?.value) {
@@ -177,36 +174,5 @@ export async function POST(request: NextRequest) {
     } catch (error) {
         console.error('Reservations POST error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-    }
-}
-
-function checkAndUpdateReservationStatus(db: any, reservation_id: number | string) {
-    try {
-        const res = db.prepare('SELECT guests_count, status FROM reservations WHERE id = ?').get(reservation_id);
-        if (!res || res.status === 'cancelled' || res.status === 'completed' || res.status === 'no_show') return;
-        
-        // Check if there are any table assignments for this reservation
-        const hasAssignments = db.prepare('SELECT COUNT(*) as count FROM table_assignments WHERE reservation_id = ?').get(reservation_id);
-        
-        if (hasAssignments.count === 0) {
-            // No table assignments, leave status as is (should be 'confirmed' for new reservations)
-            return;
-        }
-        
-        const assigned = db.prepare(`
-            SELECT coalesce(SUM(t.capacity), 0) as total_capacity
-            FROM table_assignments ta
-            JOIN tables_config t ON ta.table_id = t.id
-            WHERE ta.reservation_id = ?
-        `).get(reservation_id);
-        
-        const capacity = assigned?.total_capacity || 0;
-        const newStatus = capacity >= res.guests_count ? 'confirmed' : 'needs_seat';
-        
-        if (res.status !== newStatus) {
-            db.prepare('UPDATE reservations SET status = ? WHERE id = ?').run(newStatus, reservation_id);
-        }
-    } catch (err) {
-        console.error('Failed to update reservation status:', err);
     }
 }

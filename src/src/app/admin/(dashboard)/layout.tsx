@@ -3,6 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { IconChartBar, IconClipboard, IconSettings, IconUsers } from '@/components/Icons';
+import A11yToolbar from '@/components/A11yToolbar';
 
 interface User {
     userId: number;
@@ -70,21 +72,21 @@ export default function AdminDashboardLayout({ children }: { children: React.Rea
                         href="/admin/dashboard"
                         className={`admin-sidebar-link ${isActive('/admin/dashboard') ? 'active' : ''}`}
                     >
-                        <span className="admin-sidebar-link-icon">📊</span>
+                        <span className="admin-sidebar-link-icon"><IconChartBar size={18} /></span>
                         Oversikt
                     </Link>
                     <Link
                         href="/admin/reservasjoner"
                         className={`admin-sidebar-link ${isActive('/admin/reservasjoner') ? 'active' : ''}`}
                     >
-                        <span className="admin-sidebar-link-icon">📋</span>
+                        <span className="admin-sidebar-link-icon"><IconClipboard size={18} /></span>
                         Reservasjoner
                     </Link>
                     <Link
                         href="/admin/innstillinger"
                         className={`admin-sidebar-link ${isActive('/admin/innstillinger') ? 'active' : ''}`}
                     >
-                        <span className="admin-sidebar-link-icon">⚙️</span>
+                        <span className="admin-sidebar-link-icon"><IconSettings size={18} /></span>
                         Innstillinger
                     </Link>
                     {user?.role === 'admin' && (
@@ -92,7 +94,7 @@ export default function AdminDashboardLayout({ children }: { children: React.Rea
                             href="/admin/brukere"
                             className={`admin-sidebar-link ${isActive('/admin/brukere') ? 'active' : ''}`}
                         >
-                            <span className="admin-sidebar-link-icon">👥</span>
+                            <span className="admin-sidebar-link-icon"><IconUsers size={18} /></span>
                             Brukere
                         </Link>
                     )}
@@ -101,6 +103,7 @@ export default function AdminDashboardLayout({ children }: { children: React.Rea
                     {children}
                 </main>
             </div>
+            <A11yToolbar />
         </>
     );
 }

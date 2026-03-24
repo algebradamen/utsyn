@@ -3,6 +3,7 @@ import React from 'react';
 interface IconProps {
   size?: number;
   className?: string;
+  style?: React.CSSProperties;
   'aria-hidden'?: boolean;
 }
 
@@ -26,6 +27,7 @@ function svg(props: IconProps, children: React.ReactNode) {
       strokeLinejoin="round"
       className={className}
       role="img"
+      style={{ flexShrink: 0, ...(rest.style as React.CSSProperties || {}) }}
       {...rest}
     >
       {children}
@@ -205,6 +207,29 @@ export function IconRefresh(props: IconProps) {
   return svg(props, <>
     <polyline points="23 4 23 10 17 10" />
     <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+  </>);
+}
+
+export function IconSave(props: IconProps) {
+  return svg(props, <>
+    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+    <polyline points="17 21 17 13 7 13 7 21" />
+    <polyline points="7 3 7 8 15 8" />
+  </>);
+}
+
+export function IconHourglass(props: IconProps) {
+  return svg(props, <>
+    <path d="M5 22h14" />
+    <path d="M5 2h14" />
+    <path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22" />
+    <path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2" />
+  </>);
+}
+
+export function IconWrench(props: IconProps) {
+  return svg(props, <>
+    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
   </>);
 }
 

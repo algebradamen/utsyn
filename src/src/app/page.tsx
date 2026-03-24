@@ -6,6 +6,7 @@ import { LocaleProvider, useLocale } from '@/components/LocaleProvider';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import A11yToolbar from '@/components/A11yToolbar';
+import { IconClock, IconMoney, IconMapPin } from '@/components/Icons';
 
 interface OpenDay {
   day_of_week: number;
@@ -54,7 +55,7 @@ function HomePage() {
           <div className="info-grid">
             {/* Hours */}
             <div className="card animate-in">
-              <div className="card-icon" aria-hidden="true">🕐</div>
+              <div className="card-icon" aria-hidden="true"><IconClock size={32} /></div>
               <h3>{t('info_hours_title')}</h3>
               <table className="hours-table" role="table" aria-label={t('info_hours_title')}>
                 <tbody>
@@ -75,7 +76,7 @@ function HomePage() {
 
             {/* Prices */}
             <div className="card animate-in">
-              <div className="card-icon" aria-hidden="true">💰</div>
+              <div className="card-icon" aria-hidden="true"><IconMoney size={32} /></div>
               <h3>{t('info_price_title')}</h3>
               <div style={{ marginTop: 'var(--space-md)' }}>
                 <div className="price-item">
@@ -95,7 +96,7 @@ function HomePage() {
 
             {/* Location */}
             <div className="card animate-in">
-              <div className="card-icon" aria-hidden="true">📍</div>
+              <div className="card-icon" aria-hidden="true"><IconMapPin size={32} /></div>
               <h3>{t('info_location_title')}</h3>
               <p style={{ marginTop: 'var(--space-md)', fontSize: 'var(--font-size-md)' }}>
                 {settings.address || 'Tangen 21, 1. etg'}
