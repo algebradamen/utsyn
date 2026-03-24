@@ -25,7 +25,7 @@ function HomePage() {
     fetch('/api/settings').then(r => r.json()).then(setSettings).catch(console.error);
     fetch('/api/open-days').then(r => r.json()).then(setOpenDays).catch(console.error);
     fetch('/api/menu').then(r => r.json()).then(data => {
-        if (Array.isArray(data)) setMenuCategories(data);
+      if (Array.isArray(data)) setMenuCategories(data);
     }).catch(console.error);
   }, []);
 
@@ -84,33 +84,33 @@ function HomePage() {
               <h3>{locale === 'no' ? 'Meny' : 'Menu'}</h3>
               <div style={{ marginTop: 'var(--space-md)' }}>
                 {menuCategories.map(category => (
-                    <div key={category.id} style={{ marginBottom: 'var(--space-md)' }}>
-                        <h4 style={{ fontSize: 'var(--font-size-sm)', textTransform: 'uppercase', color: 'var(--color-text-muted)', marginBottom: 'var(--space-xs)' }}>
-                            {locale === 'no' ? category.name_no : category.name_en}
-                        </h4>
-                        {category.items.filter((item: any) => item.is_active).map((item: any) => (
-                            <div key={item.id} className="price-item" style={{ borderBottom: '1px solid var(--color-border-light)', paddingBottom: 'var(--space-xs)', marginBottom: 'var(--space-xs)', flexWrap: 'wrap' }}>
-                                <div style={{ flex: 1 }}>
-                                    <div style={{ fontWeight: 'var(--font-weight-medium)' }}>
-                                        {locale === 'no' ? item.name_no : item.name_en}
-                                    </div>
-                                    {(item.desc_no || item.desc_en) && (
-                                        <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
-                                            {locale === 'no' ? item.desc_no : item.desc_en}
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="price-value" style={{ marginLeft: 'var(--space-md)' }}>
-                                    {settings.currency || 'kr'} {item.price},-
-                                </div>
+                  <div key={category.id} style={{ marginBottom: 'var(--space-md)' }}>
+                    <h4 style={{ fontSize: 'var(--font-size-sm)', textTransform: 'uppercase', color: 'var(--color-text-muted)', marginBottom: 'var(--space-xs)' }}>
+                      {locale === 'no' ? category.name_no : category.name_en}
+                    </h4>
+                    {category.items.filter((item: any) => item.is_active).map((item: any) => (
+                      <div key={item.id} className="price-item" style={{ borderBottom: '1px solid var(--color-border-light)', paddingBottom: 'var(--space-xs)', marginBottom: 'var(--space-xs)', flexWrap: 'wrap' }}>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: 'var(--font-weight-medium)' }}>
+                            {locale === 'no' ? item.name_no : item.name_en}
+                          </div>
+                          {(item.desc_no || item.desc_en) && (
+                            <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
+                              {locale === 'no' ? item.desc_no : item.desc_en}
                             </div>
-                        ))}
-                    </div>
+                          )}
+                        </div>
+                        <div className="price-value" style={{ marginLeft: 'var(--space-md)' }}>
+                          {settings.currency || 'kr'} {item.price},-
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 ))}
                 {menuCategories.length === 0 && (
-                     <div className="price-item">
-                        <span>Meny laster...</span>
-                     </div>
+                  <div className="price-item">
+                    <span>Meny laster...</span>
+                  </div>
                 )}
               </div>
             </div>
@@ -128,13 +128,13 @@ function HomePage() {
                 </p>
               )}
               <div style={{ marginTop: 'var(--space-md)', width: '100%', height: '200px', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
-                <iframe 
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2119.578680456184!2d8.0068037!3d58.1458995!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4647900b3f8db1f3%3A0x6e9c9c381fbc05!2sTangen%20videreg%C3%A5ende%20skole!5e0!3m2!1sno!2sno!4v1700000000000!5m2!1sno!2sno" 
-                  width="100%" 
-                  height="100%" 
-                  style={{ border: 0 }} 
-                  allowFullScreen={false} 
-                  loading="lazy" 
+                <iframe
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2119.578680456184!2d8.0068037!3d58.1458995!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4647900b3f8db1f3%3A0x6e9c9c381fbc05!2sTangen%20videreg%C3%A5ende%20skole!5e0!3m2!1sno!2sno!4v1700000000000!5m2!1sno!2sno"
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  allowFullScreen={false}
+                  loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
                   title="Kart til Restaurant Utsyn"
                 ></iframe>
@@ -144,10 +144,116 @@ function HomePage() {
         </section>
 
         {/* About */}
-        <section id="om-oss" className="section section-alt" aria-labelledby="about-heading">
-          <div className="about-section animate-in">
+        <section id="om-oss" className="section section-alt" aria-labelledby="about-heading" style={{ overflow: 'hidden' }}>
+          <div className="about-section animate-in" style={{ textAlign: 'center', marginBottom: 'var(--space-3xl)' }}>
             <h2 id="about-heading" className="section-title">{t('about_title')}</h2>
-            <p className="about-text">{aboutText}</p>
+            <p className="about-text" style={{ maxWidth: '800px', margin: '0 auto' }}>{aboutText}</p>
+          </div>
+
+          <div className="container">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4xl)' }}>
+              {/* Row 1 */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2xl)', flexWrap: 'wrap' }} className="animate-in slide-in-left">
+                <div style={{ flex: '1 1 400px', borderRadius: 'var(--radius-lg)', overflow: 'hidden', boxShadow: 'var(--shadow-lg)' }}>
+                  <img src="/kitchen_plating_food.jpg" alt={locale === 'no' ? "Elever på kjøkkenet" : "Students in the kitchen"} style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'cover', aspectRatio: '4/3' }} />
+                </div>
+                <div style={{ flex: '1 1 400px' }}>
+                  <h3 style={{ fontSize: 'var(--font-size-xl)', marginBottom: 'var(--space-md)' }}>
+                    {locale === 'no' ? 'Lidenskap for faget' : 'Passion for the craft'}
+                  </h3>
+                  <p style={{ color: 'var(--color-text-secondary)', lineHeight: 'var(--line-height-relaxed)' }}>
+                    {locale === 'no'
+                      ? 'Våre dyktige elever lærer seg alt fra klassiske teknikker til moderne matlaging på et pulserende og lærerikt kjøkken.'
+                      : 'Our skilled students learn everything from classic techniques to modern cooking in a vibrant and educational kitchen.'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Row 2 */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2xl)', flexWrap: 'wrap', flexDirection: 'row-reverse' }} className="animate-in slide-in-right">
+                <div style={{ flex: '1 1 400px', borderRadius: 'var(--radius-lg)', overflow: 'hidden', boxShadow: 'var(--shadow-lg)' }}>
+                  <img src="/culinary_students_sushi.jpg" alt={locale === 'no' ? "Elever lager sushi" : "Students making sushi"} style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'cover', aspectRatio: '4/3' }} />
+                </div>
+                <div style={{ flex: '1 1 400px' }}>
+                  <h3 style={{ fontSize: 'var(--font-size-xl)', marginBottom: 'var(--space-md)' }}>
+                    {locale === 'no' ? 'Kreativitet med presisjon' : 'Creativity with precision'}
+                  </h3>
+                  <p style={{ color: 'var(--color-text-secondary)', lineHeight: 'var(--line-height-relaxed)' }}>
+                    {locale === 'no'
+                      ? 'Gjennom nøyaktighet og utforskning forvandles råvarer til kulinariske kunstverk og smaksopplevelser du sent vil glemme.'
+                      : 'Through accuracy and exploration, raw ingredients are transformed into culinary artwork and unforgettable taste experiences.'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Row 3 */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2xl)', flexWrap: 'wrap' }} className="animate-in slide-in-left">
+                <div style={{ flex: '1 1 400px', borderRadius: 'var(--radius-lg)', overflow: 'hidden', boxShadow: 'var(--shadow-lg)' }}>
+                  <img src="/plating_dessert.jpg" alt={locale === 'no' ? "Student anretter dessert" : "Student plating dessert"} style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'cover', aspectRatio: '4/3' }} />
+                </div>
+                <div style={{ flex: '1 1 400px' }}>
+                  <h3 style={{ fontSize: 'var(--font-size-xl)', marginBottom: 'var(--space-md)' }}>
+                    {locale === 'no' ? 'Detaljer og perfeksjon' : 'Details and perfection'}
+                  </h3>
+                  <p style={{ color: 'var(--color-text-secondary)', lineHeight: 'var(--line-height-relaxed)' }}>
+                    {locale === 'no'
+                      ? 'Hver eneste rett blir nøye anrettet, med et blikk for estetikk og sans for de deilige, små detaljene som gjør måltidet komplett.'
+                      : 'Every single dish is carefully plated, with an eye for aesthetics and a sense for the delicious little details that make the meal complete.'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Row 4 */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2xl)', flexWrap: 'wrap', flexDirection: 'row-reverse' }} className="animate-in slide-in-right">
+                <div style={{ flex: '1 1 400px', borderRadius: 'var(--radius-lg)', overflow: 'hidden', boxShadow: 'var(--shadow-lg)' }}>
+                  <img src="/student_setting_table.jpg" alt={locale === 'no' ? "Student dekker bord" : "Student setting table"} style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'cover', aspectRatio: '4/3' }} />
+                </div>
+                <div style={{ flex: '1 1 400px' }}>
+                  <h3 style={{ fontSize: 'var(--font-size-xl)', marginBottom: 'var(--space-md)' }}>
+                    {locale === 'no' ? 'Gjestfrihet og service' : 'Hospitality and service'}
+                  </h3>
+                  <p style={{ color: 'var(--color-text-secondary)', lineHeight: 'var(--line-height-relaxed)' }}>
+                    {locale === 'no'
+                      ? 'Restaraunt Utsyn er mer enn bare mat; våre servitørelever sørger for at restauranten er vakkert dekket og at alle gjester føler seg hjertelig velkomne.'
+                      : 'Restaraunt Utsyn is more than just food; our waiter students ensure that the restaurant is beautifully set and that all guests feel warmly welcomed.'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Row 5 */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2xl)', flexWrap: 'wrap' }} className="animate-in slide-in-left">
+                <div style={{ flex: '1 1 400px', borderRadius: 'var(--radius-lg)', overflow: 'hidden', boxShadow: 'var(--shadow-lg)' }}>
+                  <img src="/chef_at_pass.jpg" alt={locale === 'no' ? "Kokk ved luken" : "Chef at the pass"} style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'cover', aspectRatio: '4/3' }} />
+                </div>
+                <div style={{ flex: '1 1 400px' }}>
+                  <h3 style={{ fontSize: 'var(--font-size-xl)', marginBottom: 'var(--space-md)' }}>
+                    {locale === 'no' ? 'Konsentrasjon og kvalitet' : 'Concentration and quality'}
+                  </h3>
+                  <p style={{ color: 'var(--color-text-secondary)', lineHeight: 'var(--line-height-relaxed)' }}>
+                    {locale === 'no'
+                      ? 'Som ved enhver anerkjent restaurant opererer vi med strenge kvalitetskrav og en lidenskap for et sluttresultat som fanger øyet og gleder ganen.'
+                      : 'As with any renowned restaurant, we operate with strict quality requirements and a passion for a final result that catches the eye and delights the palate.'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Row 6 */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2xl)', flexWrap: 'wrap', flexDirection: 'row-reverse' }} className="animate-in slide-in-right">
+                <div style={{ flex: '1 1 400px', borderRadius: 'var(--radius-lg)', overflow: 'hidden', boxShadow: 'var(--shadow-lg)' }}>
+                  <img src="/roast_beef_sandwiches.jpg" alt={locale === 'no' ? "Smørbrødbrett" : "Sandwich platter"} style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'cover', aspectRatio: '4/3' }} />
+                </div>
+                <div style={{ flex: '1 1 400px' }}>
+                  <h3 style={{ fontSize: 'var(--font-size-xl)', marginBottom: 'var(--space-md)' }}>
+                    {locale === 'no' ? 'Bredt og smakfullt tilbud' : 'Broad and tasty selection'}
+                  </h3>
+                  <p style={{ color: 'var(--color-text-secondary)', lineHeight: 'var(--line-height-relaxed)' }}>
+                    {locale === 'no'
+                      ? 'Vi serverer et variert utvalg av retter som passer til store og små anledninger, laget fra bunnen av med ferske, gode råvarer.'
+                      : 'We serve a varied selection of dishes suitable for large and small occasions, made from scratch with fresh, high-quality ingredients.'}
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 

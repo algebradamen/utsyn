@@ -2,13 +2,13 @@
 
 /* ===== DESIGN TOKENS ===== */
 :root {
-  /* Colors - Navy & Green restaurant palette */
-  --color-primary: #132b4f;
-  --color-primary-light: #1e3f6e;
-  --color-primary-dark: #0c1d36;
-  --color-primary-50: #e8edf4;
-  --color-primary-100: #c5d0e3;
-  --color-primary-200: #8fa3c5;
+  /* Colors - Light blue restaurant palette */
+  --color-primary: #2d689e;  /* 50% darker variant of #AFCDE8 */
+  --color-primary-light: #238abc; /* 50% darker variant of #CAE7F5 */
+  --color-primary-dark: #1c75a0; /* 50% darker variant of #8ECDEB */
+  --color-primary-50: #EFF8FF;
+  --color-primary-100: #DAEEFF;
+  --color-primary-200: #B1DFFF;
 
   --color-accent: #9ccd6b;
   --color-accent-light: #b3da8e;
@@ -105,7 +105,7 @@
   --color-bg: #FFFFFF;
   --color-bg-alt: #F0F0F0;
   --color-border: #000000;
-  --color-primary: #0c1d36;
+  --color-primary: #4a90e2; /* deeper but still blue */
   --shadow-sm: 0 0 0 1px #000;
   --shadow-md: 0 0 0 2px #000;
 }
@@ -351,7 +351,7 @@ body {
 
 /* ===== HERO SECTION ===== */
 .hero {
-  background: linear-gradient(135deg, var(--color-primary-dark), var(--color-primary), var(--color-primary-light));
+  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.7)), url('/main_bg.jpg') center/cover no-repeat;
   color: var(--color-text-inverse);
   padding: var(--space-4xl) var(--space-xl);
   text-align: center;
@@ -1559,3 +1559,35 @@ body {
   max-height: 90vh;
   overflow-y: auto;
 }
+
+/* Custom Image Animations */
+.slide-in-left {
+  animation: slideInLeft 1s ease forwards;
+}
+
+.slide-in-right {
+  animation: slideInRight 1s ease forwards;
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
