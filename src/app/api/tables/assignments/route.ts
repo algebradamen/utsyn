@@ -88,21 +88,22 @@ export async function DELETE(request: NextRequest) {
 
 function checkAndUpdateReservationStatus(db: any, reservation_id: number | string) {
     try {
-        const res = db.prepare('SELECT guests_count, status FROM reservations WHERE id = ?').get(reservation_id);
+        const res = db.prepare('SELECT guests_count, status, phone, date, time_slot, confirmation_code FROM reservations WHERE id = ?').get(reservation_id);
         if (!res || res.status === 'cancelled' || res.status === 'completed' || res.status === 'no_show') return;
         
         const assigned = db.prepare(`
             SELECT coalesce(SUM(t.capacity), 0) as total_capacity
             FROM table_assignments ta
-            JOIN tables t ON ta.table_id = t.id
+            JOIN tables_config t ON ta.table_id = t.id
             WHERE ta.reservation_id = ?
         `).get(reservation_id);
         
         const capacity = assigned?.total_capacity || 0;
-        const newStatus = capacity >= res.guests_count ? 'confirmed' : 'needs_seat';
         
-        if (res.status !== newStatus) {
-            db.prepare('UPDATE reservations SET status = ? WHERE id = ?').run(newStatus, reservation_id);
+        // Only downgrade to needs_seat if a table was unassigned and capacity is no longer enough.
+        // We DO NOT auto-upgrade to 'confirmed'. The user must click the confirm button.
+        if (res.status === 'confirmed' && capacity < res.guests_count) {
+             db.prepare('UPDATE reservations SET status = ? WHERE id = ?').run('needs_seat', reservation_id);
         }
     } catch (err) {
         console.error('Failed to update reservation status:', err);

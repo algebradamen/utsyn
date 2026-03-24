@@ -131,7 +131,13 @@ function initializeDatabase(database: Database.Database) {
       ['max_capacity', '60'],
       ['booking_cutoff_minutes', '45'],
       ['time_slot_interval', '15'],
+      ['sms_provider', 'webhook'],
       ['sms_webhook_url', ''],
+      ['sms_twilio_sid', ''],
+      ['sms_twilio_token', ''],
+      ['sms_twilio_from', ''],
+      ['sms_template_received', 'Takk for din bestilling hos Restaurant Utsyn! Din kode er {kode}. Vi vil bekrefte og tildele bord snart. Dette gjelder {dato} kl {tid} for {antall} gjester.'],
+      ['sms_template_confirmed', 'Din reservasjon hos Restaurant Utsyn for {dato} kl {tid} er nå bekreftet og bord er tildelt. Velkommen!'],
     ];
 
     const insert = database.prepare('INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)');
@@ -141,6 +147,15 @@ function initializeDatabase(database: Database.Database) {
       }
     });
     insertMany(defaultSettings);
+  } else {
+    // Ensure new SMS templates exist for older DBs
+    const ensureSettings = database.prepare('INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)');
+    ensureSettings.run('sms_provider', 'webhook');
+    ensureSettings.run('sms_twilio_sid', '');
+    ensureSettings.run('sms_twilio_token', '');
+    ensureSettings.run('sms_twilio_from', '');
+    ensureSettings.run('sms_template_received', 'Takk for din bestilling hos Restaurant Utsyn! Din kode er {kode}. Vi vil bekrefte og tildele bord snart. Dette gjelder {dato} kl {tid} for {antall} gjester.');
+    ensureSettings.run('sms_template_confirmed', 'Din reservasjon hos Restaurant Utsyn for {dato} kl {tid} er nå bekreftet og bord er tildelt. Velkommen!');
   }
 
   // Seed default open days if empty

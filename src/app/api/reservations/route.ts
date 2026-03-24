@@ -150,23 +150,23 @@ export async function POST(request: NextRequest) {
         );
 
         // Check and update status based on table assignments (will set to 'needs_seat' if no tables assigned)
-        checkAndUpdateReservationStatus(db, result.lastInsertRowid);
+        checkAndUpdateReservationStatus(db, Number(result.lastInsertRowid));
 
         // SMS webhook (if configured)
         try {
-            const webhookRow = db.prepare('SELECT value FROM settings WHERE key = ?').get('sms_webhook_url') as { value: string } | undefined;
-            if (webhookRow?.value) {
-                fetch(webhookRow.value, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        phone,
-                        message: `Takk for din bestilling hos Restaurant Utsyn! Kode: ${confirmationCode}. ${date} kl ${time_slot}, ${guests_count} gjester.`,
-                    }),
-                }).catch(err => console.error('SMS webhook error:', err));
+            const templateRow = db.prepare('SELECT value FROM settings WHERE key = ?').get('sms_template_received') as { value: string } | undefined;
+            if (templateRow?.value) {
+                let message = templateRow.value;
+                message = message.replace(/{kode}/g, confirmationCode || '');
+                message = message.replace(/{dato}/g, date);
+                message = message.replace(/{tid}/g, time_slot);
+                message = message.replace(/{antall}/g, guests_count.toString());
+                
+                const { sendSms } = await import('@/lib/sms');
+                await sendSms(phone, message);
             }
-        } catch {
-            // Don't fail reservation if SMS fails
+        } catch (err) {
+            console.error('Failed to send received SMS', err);
         }
 
         return NextResponse.json({

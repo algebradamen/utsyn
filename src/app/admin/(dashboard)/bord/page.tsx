@@ -235,6 +235,20 @@ export default function BordPage() {
         }
     };
 
+    const confirmReservation = async (id: number) => {
+        try {
+            const res = await fetch(`/api/reservations/${id}/confirm`, { method: 'POST' });
+            if (res.ok) {
+                showToast('Reservasjon bekreftet og SMS sendt!');
+                fetchData();
+            } else {
+                showToast('Kunne ikke bekrefte reservasjonen.');
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
     if (loading) return <div className="loading"><div className="spinner" /></div>;
 
     const getTableStatus = (tableId: number) => {
@@ -345,6 +359,20 @@ export default function BordPage() {
                                         {assignedTables.length > 0 && (
                                             <div className="res-card-tables">
                                                 Bord: {assignedTables.map(a => tables.find(t => t.id === a.table_id)?.name).filter(Boolean).join(', ')}
+                                            </div>
+                                        )}
+                                        {r.status === 'needs_seat' && totalCapacity >= r.guests_count && (
+                                            <div style={{ marginTop: 'var(--space-md)' }}>
+                                                <button 
+                                                    className="btn btn-primary btn-sm"
+                                                    style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '5px' }}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        confirmReservation(r.id);
+                                                    }}
+                                                >
+                                                    <IconCheck size={16} /> Bekreft & Send SMS
+                                                </button>
                                             </div>
                                         )}
                                     </div>

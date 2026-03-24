@@ -152,6 +152,7 @@ data/                     SQLite-database (genereres automatisk)
 - Oversikt over dagens og kommende reservasjoner
 - Marker reservasjoner som fullfort, kansellert eller ikke-mott
 - Filtrer etter dato og status
+- Interaktivt bordkart for å manuelt tildele og bekrefte bord med tilhørende utsending av bekreftelses-SMS
 
 ### For administratorer
 
@@ -161,7 +162,7 @@ data/                     SQLite-database (genereres automatisk)
 - Endre priser, adresse, telefon, e-post
 - Endre forsiden (tittel, undertittel, om oss) pa norsk og engelsk
 - Opprett og slett brukerkontoer (administrator eller ansatt)
-- Konfigurer SMS-webhook for bekreftelser
+- Konfigurer SMS-leverandør (Twilio eller Webhook) og skreddersy egne SMS-maler direkte i nettleseren
 
 ## Database
 
@@ -189,18 +190,28 @@ For a nullstille databasen: slett `data/utsyn.db` og start serveren pa nytt.
 
 ## SMS-oppsett (valgfritt)
 
-For a sende SMS-bekreftelser, konfigurer en webhook-URL under admin-innstillinger.
+Restaurant Utsyn har to måter å sende SMS-bekreftelser på, som kan konfigureres under admin-innstillingene ved å endre "SMS Leverandør":
 
-Systemet sender en POST-foresporsel til webhook-URL med folgende JSON:
+### 1. Twilio (Direkte integrasjon - Anbefalt)
+Fyll inn dine API-detaljer rett i innstillingene, så sender systemet SMS helt automatisk uten noen mellomledd:
+- **Twilio Account SID**
+- **Twilio Auth Token**
+- **Twilio Sender Number**
 
+### 2. Webhook (Make.com, Zapier, etc.)
+Ved å bruke Webhook sender systemet en POST-forespørsel til en gitt URL. Perfekt hvis du vil koble SMS opp mot et annet system eller bruke en annen SMS-leverandør enn Twilio.
+Forespørselen inneholder følgende JSON:
 ```json
 {
   "phone": "+4712345678",
-  "message": "Bekreftelse fra Restaurant Utsyn. Kode: ABC123. 2026-03-20 kl 12:00, 4 gjester."
+  "message": "Meldingen generert fra malene dine..."
 }
 ```
 
-Kompatibelt med tjenester som Twilio, 46elks, eller lignende.
+### SMS-Maler og Utsendelse
+Du kan fritt redigere innholdet på SMS-meldingene direkte i admin-panelet via to maler (med hjelp av hendige variabler som `{kode}`, `{dato}`, `{tid}` og `{antall}`):
+- **SMS Mal - Ny booking:** Sendes umiddelbart og automatisk når en gjest oppretter en ny bestilling.
+- **SMS Mal - Bekreftelse/Bord tildelt:** Sendes manuelt av personalet når de har tildelt nok bordplasser til gjesten via "Bordkart"-siden og deretter trykker "Bekreft & Send SMS".
 
 ## Bordkart
 

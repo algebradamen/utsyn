@@ -196,9 +196,41 @@ export default function InnstillingerPage() {
             <label className="form-label">Booking stoppes X min før stenging</label>
             <input className="form-input" type="number" value={settings.booking_cutoff_minutes || ''} onChange={e => updateSetting('booking_cutoff_minutes', e.target.value)} />
           </div>
-          <div className="form-group">
-            <label className="form-label">SMS Webhook URL (valgfritt)</label>
-            <input className="form-input" value={settings.sms_webhook_url || ''} onChange={e => updateSetting('sms_webhook_url', e.target.value)} placeholder="https://..." />
+          <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+             <label className="form-label">SMS Leverandør</label>
+             <select className="form-input" value={settings.sms_provider || 'webhook'} onChange={e => updateSetting('sms_provider', e.target.value)}>
+                <option value="webhook">Webhook (Make.com, Zapier, etc.)</option>
+                <option value="twilio">Twilio</option>
+             </select>
+          </div>
+          {settings.sms_provider === 'twilio' ? (
+             <>
+               <div className="form-group">
+                 <label className="form-label">Twilio Account SID</label>
+                 <input className="form-input" value={settings.sms_twilio_sid || ''} onChange={e => updateSetting('sms_twilio_sid', e.target.value)} placeholder="AC..." />
+               </div>
+               <div className="form-group">
+                 <label className="form-label">Twilio Auth Token</label>
+                 <input className="form-input" type="password" value={settings.sms_twilio_token || ''} onChange={e => updateSetting('sms_twilio_token', e.target.value)} placeholder="Skjult..." />
+               </div>
+               <div className="form-group">
+                 <label className="form-label">Twilio Sender Number</label>
+                 <input className="form-input" value={settings.sms_twilio_from || ''} onChange={e => updateSetting('sms_twilio_from', e.target.value)} placeholder="+123456789" />
+               </div>
+             </>
+          ) : (
+             <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+               <label className="form-label">SMS Webhook URL (valgfritt)</label>
+               <input className="form-input" value={settings.sms_webhook_url || ''} onChange={e => updateSetting('sms_webhook_url', e.target.value)} placeholder="https://..." />
+             </div>
+          )}
+          <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+            <label className="form-label">SMS Mal - Ny booking (Bruk {"{kode}"}, {"{dato}"}, {"{tid}"}, {"{antall}"})</label>
+            <textarea className="form-textarea" value={settings.sms_template_received || ''} onChange={e => updateSetting('sms_template_received', e.target.value)} rows={3} />
+          </div>
+          <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+            <label className="form-label">SMS Mal - Bekreftelse/Bord tildelt (Bruk {"{kode}"}, {"{dato}"}, {"{tid}"}, {"{antall}"})</label>
+            <textarea className="form-textarea" value={settings.sms_template_confirmed || ''} onChange={e => updateSetting('sms_template_confirmed', e.target.value)} rows={3} />
           </div>
         </div>
         <button className="btn btn-primary" onClick={saveSettings}>Lagre</button>
