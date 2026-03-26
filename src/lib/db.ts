@@ -138,10 +138,18 @@ export async function initializeDatabase() {
         { key: 'sms_twilio_from', value: '' },
         { key: 'sms_template_received', value: 'Takk for din bestilling hos Restaurant Utsyn! Din kode er {kode}. Vi vil bekrefte og tildele bord snart. Dette gjelder {dato} kl {tid} for {antall} gjester.' },
         { key: 'sms_template_confirmed', value: 'Din reservasjon hos Restaurant Utsyn for {dato} kl {tid} er nå bekreftet og bord er tildelt. Velkommen!' },
+        { key: 'sms_template_cancelled', value: 'Din reservasjon hos Restaurant Utsyn for {dato} kl {tid} er dessverre kansellert.' },
+        { key: 'sms_template_noshow', value: 'Vi registrerte at du ikke møtte opp til din reservasjon hos Restaurant Utsyn {dato} kl {tid}.' },
       ];
 
       await sql`INSERT INTO settings ${sql(defaultSettings, 'key', 'value')} ON CONFLICT DO NOTHING`;
     }
+
+    // Ensure new templates exist for older DBs
+    await sql`INSERT INTO settings (key, value) VALUES 
+      ('sms_template_cancelled', 'Din reservasjon hos Restaurant Utsyn for {dato} kl {tid} er dessverre kansellert.'),
+      ('sms_template_noshow', 'Vi registrerte at du ikke møtte opp til din reservasjon hos Restaurant Utsyn for {dato} kl {tid}.')
+    ON CONFLICT DO NOTHING`;
 
     // 4. Seed Open Days
     const daysCheck = await sql`SELECT COUNT(*) FROM open_days`;

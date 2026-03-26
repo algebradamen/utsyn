@@ -233,6 +233,14 @@ export default function InnstillingerPage() {
             <label className="form-label">SMS Mal - Bekreftelse/Bord tildelt (Bruk {"{kode}"}, {"{dato}"}, {"{tid}"}, {"{antall}"})</label>
             <textarea className="form-textarea" value={settings.sms_template_confirmed || ''} onChange={e => updateSetting('sms_template_confirmed', e.target.value)} rows={3} />
           </div>
+          <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+            <label className="form-label">SMS Mal - Kansellert (Bruk {"{kode}"}, {"{dato}"}, {"{tid}"}, {"{antall}"})</label>
+            <textarea className="form-textarea" value={settings.sms_template_cancelled || ''} onChange={e => updateSetting('sms_template_cancelled', e.target.value)} rows={3} />
+          </div>
+          <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+            <label className="form-label">SMS Mal - Ikke møtt (Bruk {"{kode}"}, {"{dato}"}, {"{tid}"}, {"{antall}"})</label>
+            <textarea className="form-textarea" value={settings.sms_template_noshow || ''} onChange={e => updateSetting('sms_template_noshow', e.target.value)} rows={3} />
+          </div>
         </div>
         <button className="btn btn-primary" onClick={saveSettings}>Lagre</button>
       </div>
@@ -255,7 +263,7 @@ export default function InnstillingerPage() {
               </tr>
             </thead>
             <tbody>
-              {openDays.sort((a, b) => a.day_of_week - b.day_of_week).map(day => (
+              {openDays.sort((a, b) => (a.day_of_week === 0 ? 7 : a.day_of_week) - (b.day_of_week === 0 ? 7 : b.day_of_week)).map(day => (
                 <tr key={day.day_of_week}>
                   <td><strong>{DAY_NAMES[day.day_of_week]}</strong></td>
                   <td>

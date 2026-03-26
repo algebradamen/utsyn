@@ -23,10 +23,37 @@ export async function PATCH(
         }
 
         const sql = await getDb();
-        const result = await sql`UPDATE reservations SET status = ${status} WHERE id = ${id}`;
+        const result = await sql`UPDATE reservations SET status = ${status} WHERE id = ${id} RETURNING *`;
 
         if (result.count === 0) {
             return NextResponse.json({ error: 'Reservation not found' }, { status: 404 });
+        }
+
+        const reservation = result[0];
+
+        // Process SMS for cancelled or no_show
+        if ((status === 'cancelled' || status === 'no_show') && reservation.phone) {
+            try {
+                const settingsQuery = await sql`SELECT key, value FROM settings WHERE key IN ('sms_template_cancelled', 'sms_template_noshow')`;
+                const settings = Object.fromEntries(settingsQuery.map(row => [row.key, row.value]));
+                
+                const templateKey = status === 'cancelled' ? 'sms_template_cancelled' : 'sms_template_noshow';
+                let templateText = settings[templateKey];
+
+                if (templateText) {
+                    const { sendSms } = await import('@/lib/sms');
+                    
+                    const msg = templateText
+                        .replace('{kode}', reservation.confirmation_code || '')
+                        .replace('{dato}', reservation.date || '')
+                        .replace('{tid}', reservation.time_slot || '')
+                        .replace('{antall}', String(reservation.guests_count || ''));
+
+                    await sendSms(reservation.phone, msg);
+                }
+            } catch (smsError) {
+                console.error('Error sending SMS on status update:', smsError);
+            }
         }
 
         return NextResponse.json({ success: true });

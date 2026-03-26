@@ -247,7 +247,7 @@ function BookingWizard() {
 
     const canGoNextMonth = () => {
         const maxDate = new Date();
-        maxDate.setMonth(maxDate.getMonth() + 3);
+        maxDate.setMonth(maxDate.getMonth() + 12);
         return new Date(currentYear, currentMonth + 1) <= maxDate;
     };
 
