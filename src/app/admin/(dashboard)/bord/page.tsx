@@ -7,7 +7,7 @@ interface Table {
     id: number;
     name: string;
     capacity: number;
-    is_active: number;
+    is_active: boolean;
 }
 
 interface Reservation {
@@ -214,11 +214,11 @@ export default function BordPage() {
         if (!selectedReservation) {
             setEditingTable(table || null);
             setEditCapacity(table?.capacity || 4);
-            setEditIsActive(table?.is_active !== 0);
+            setEditIsActive(!!table?.is_active);
             return;
         }
 
-        if (table && table.is_active === 0) {
+        if (table && !table.is_active) {
             showToast('Dette bordet er inaktivt og kan ikke tildeles.');
             return;
         }
@@ -253,7 +253,7 @@ export default function BordPage() {
             const res = await fetch('/api/tables', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: editingTable.id, capacity: editCapacity, is_active: editIsActive ? 1 : 0 })
+                body: JSON.stringify({ id: editingTable.id, capacity: editCapacity, is_active: editIsActive })
             });
             if (res.ok) {
                 setEditingTable(null);
@@ -350,7 +350,7 @@ export default function BordPage() {
 
     const getTableStatus = (tableId: number) => {
         const table = tables.find(t => t.id === tableId);
-        if (table && table.is_active === 0) return 'inactive';
+        if (table && !table.is_active) return 'inactive';
 
         const tableAssignments = assignments.filter(a => a.table_id === tableId);
 

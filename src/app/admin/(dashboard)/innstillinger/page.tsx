@@ -7,7 +7,7 @@ interface OpenDay {
   day_of_week: number;
   open_time: string;
   close_time: string;
-  is_active: number;
+  is_active: boolean;
 }
 
 interface Closure {
@@ -124,7 +124,7 @@ export default function InnstillingerPage() {
     setSettings(prev => ({ ...prev, [key]: value }));
   };
 
-  const updateOpenDay = (dayOfWeek: number, field: string, value: string | number) => {
+  const updateOpenDay = (dayOfWeek: number, field: string, value: string | number | boolean) => {
     setOpenDays(prev =>
       prev.map(d =>
         d.day_of_week === dayOfWeek ? { ...d, [field]: value } : d
@@ -257,8 +257,8 @@ export default function InnstillingerPage() {
                     <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)', cursor: 'pointer' }}>
                       <input
                         type="checkbox"
-                        checked={day.is_active === 1}
-                        onChange={e => updateOpenDay(day.day_of_week, 'is_active', e.target.checked ? 1 : 0)}
+                        checked={!!day.is_active}
+                        onChange={e => updateOpenDay(day.day_of_week, 'is_active', e.target.checked)}
                         style={{ width: 20, height: 20 }}
                       />
                       {day.is_active ? 'Ja' : 'Nei'}

@@ -11,7 +11,7 @@ interface MenuItem {
     desc_no: string;
     desc_en: string;
     price: number;
-    is_active: number;
+    is_active: boolean;
 }
 
 interface MenuCategory {
@@ -179,7 +179,7 @@ export default function MenyPage() {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-md)' }}>
                         <h3>{cat.name_no} <span style={{ color: 'var(--color-text-muted)', fontSize: 'var(--font-size-sm)' }}>({cat.name_en})</span></h3>
                         <div>
-                            <button className="btn btn-secondary btn-sm" style={{ marginRight: '8px' }} onClick={() => setEditingItem({ category_id: cat.id, is_active: 1, price: 0 })}>
+                            <button className="btn btn-secondary btn-sm" style={{ marginRight: '8px' }} onClick={() => setEditingItem({ category_id: cat.id, is_active: true, price: 0 })}>
                                 + Legg til rett
                             </button>
                             <button className="btn btn-danger btn-sm" onClick={() => confirmDeleteCategory(cat.id)}>
@@ -203,8 +203,8 @@ export default function MenyPage() {
                                 {cat.items.map(item => (
                                     <tr key={item.id}>
                                         <td>
-                                            <span className={`status-badge ${item.is_active ? 'status-confirmed' : 'status-cancelled'}`}>
-                                                {item.is_active ? 'Aktiv' : 'Deaktivert'}
+                                            <span className={`status-badge ${!!item.is_active ? 'status-confirmed' : 'status-cancelled'}`}>
+                                                {!!item.is_active ? 'Aktiv' : 'Deaktivert'}
                                             </span>
                                         </td>
                                         <td>
@@ -264,9 +264,9 @@ export default function MenyPage() {
                                 </div>
                                 <div className="form-group">
                                     <label className="form-label">Status</label>
-                                    <select className="form-select" value={editingItem.is_active} onChange={e => setEditingItem({...editingItem, is_active: parseInt(e.target.value)})}>
-                                        <option value={1}>Aktiv</option>
-                                        <option value={0}>Deaktivert</option>
+                                    <select className="form-select" value={editingItem.is_active ? '1' : '0'} onChange={e => setEditingItem({...editingItem, is_active: e.target.value === '1'})}>
+                                        <option value="1">Aktiv</option>
+                                        <option value="0">Deaktivert</option>
                                     </select>
                                 </div>
                             </div>
