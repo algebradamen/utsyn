@@ -16,6 +16,8 @@ interface Closure {
   date: string;
   reason_no: string;
   reason_en: string;
+  is_closed: boolean;
+  time_slots: string;
 }
 
 const DAY_NAMES = ['Søndag', 'Mandag', 'Tirsdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lørdag'];
@@ -31,6 +33,8 @@ export default function InnstillingerPage() {
   const [newClosureDate, setNewClosureDate] = useState('');
   const [newClosureReasonNo, setNewClosureReasonNo] = useState('');
   const [newClosureReasonEn, setNewClosureReasonEn] = useState('');
+  const [newClosureIsClosed, setNewClosureIsClosed] = useState(true);
+  const [newClosureTimeSlots, setNewClosureTimeSlots] = useState('');
 
   const fetchAll = useCallback(async () => {
     try {
@@ -95,14 +99,18 @@ export default function InnstillingerPage() {
           date: newClosureDate,
           reason_no: newClosureReasonNo,
           reason_en: newClosureReasonEn,
+          is_closed: newClosureIsClosed,
+          time_slots: newClosureTimeSlots,
         }),
       });
       if (res.ok) {
         setNewClosureDate('');
         setNewClosureReasonNo('');
         setNewClosureReasonEn('');
+        setNewClosureTimeSlots('');
+        setNewClosureIsClosed(true);
         fetchAll();
-        showToast('Stengt dag lagt til!');
+        showToast('Spesialdag lagt til!');
       }
     } catch (err) {
       console.error('Error adding closure:', err);
@@ -316,10 +324,11 @@ export default function InnstillingerPage() {
       </div>
 
       {/* Special Closures */}
+      {/* Special Closures */}
       <div className="admin-form-section">
-        <h3>Stengte dager</h3>
+        <h3>Avvikende åpningstider / Stengte dager</h3>
         <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-lg)' }}>
-          Legg til spesifikke datoer restauranten er stengt (helligdager, ferier, etc.)
+          Legg til spesifikke datoer hvor restauranten er stengt (helligdager) ELLER har egne åpningstider.
         </p>
         <div className="admin-form-grid" style={{ marginBottom: 'var(--space-lg)' }}>
           <div className="form-group">
@@ -327,7 +336,7 @@ export default function InnstillingerPage() {
             <input type="date" className="form-input" value={newClosureDate} onChange={e => setNewClosureDate(e.target.value)} />
           </div>
           <div className="form-group">
-            <label className="form-label">Grunn (Norsk)</label>
+            <label className="form-label">Grunn (Norsk, f.eks. Spesial Event)</label>
             <input className="form-input" value={newClosureReasonNo} onChange={e => setNewClosureReasonNo(e.target.value)} placeholder="F.eks. Juleferie" />
           </div>
           <div className="form-group">
@@ -335,8 +344,30 @@ export default function InnstillingerPage() {
             <input className="form-input" value={newClosureReasonEn} onChange={e => setNewClosureReasonEn(e.target.value)} placeholder="E.g. Christmas holiday" />
           </div>
         </div>
+        <div className="admin-form-grid" style={{ marginBottom: 'var(--space-lg)' }}>
+          <div className="form-group" style={{ display: 'flex', alignItems: 'center', height: '100%' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)', cursor: 'pointer', fontWeight: 500 }}>
+              <input 
+                type="checkbox" 
+                checked={newClosureIsClosed} 
+                onChange={e => {
+                  setNewClosureIsClosed(e.target.checked);
+                  if (e.target.checked) setNewClosureTimeSlots('');
+                }} 
+                style={{ width: 20, height: 20 }}
+              />
+              Helt stengt denne dagen
+            </label>
+          </div>
+          {!newClosureIsClosed && (
+            <div className="form-group" style={{ gridColumn: 'span 2' }}>
+              <label className="form-label">Spesifikke tidspunkt (f.eks: 17:00, 18:00)</label>
+              <input className="form-input" value={newClosureTimeSlots} onChange={e => setNewClosureTimeSlots(e.target.value)} placeholder="17:00, 18:00, 19:30" />
+            </div>
+          )}
+        </div>
         <button className="btn btn-secondary" onClick={addClosure} disabled={!newClosureDate} style={{ marginBottom: 'var(--space-xl)' }}>
-          + Legg til stengt dag
+          + Legg til avvik
         </button>
 
         {closures.length > 0 && (
@@ -345,6 +376,7 @@ export default function InnstillingerPage() {
               <thead>
                 <tr>
                   <th>Dato</th>
+                  <th>Status</th>
                   <th>Grunn (NO)</th>
                   <th>Grunn (EN)</th>
                   <th>Handling</th>
@@ -354,6 +386,13 @@ export default function InnstillingerPage() {
                 {closures.map(c => (
                   <tr key={c.id}>
                     <td>{c.date}</td>
+                    <td>
+                      {c.is_closed ? (
+                        <span style={{ color: 'var(--color-danger)', fontWeight: 500 }}>Stengt</span>
+                      ) : (
+                        <span style={{ color: 'var(--color-success)', fontWeight: 500 }}>Åpent: {c.time_slots}</span>
+                      )}
+                    </td>
                     <td>{c.reason_no || '—'}</td>
                     <td>{c.reason_en || '—'}</td>
                     <td>

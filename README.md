@@ -1,247 +1,126 @@
 # Restaurant Utsyn
 
-Bestillingssystem for Restaurant Utsyn ved Tangen videregående skole.
-Online reservation system for Restaurant Utsyn at Tangen Upper Secondary School.
+Velkommen til det offisielle bestillingssystemet for Restaurant Utsyn ved Tangen videregående skole! Dette systemet gjør det enkelt for gjester å reservere bord online, og for de ansatte å administrere åpningstider, bordkart og SMS-varslinger.
 
-# Roller
+---
 
-- Iusup
-    - utvikler, drift, optimismer, database, design, deploy, feilretting, frontend, backend
+## Prosjektgruppe og Roller
 
-- Nell
-    - prototype design, brukerstøtte, tidlig figma-utvikler i prosjektet, kundemøter
+Prosjektet ble utformet og utviklet av et dedikert team. Slik var ansvaret fordelt:
 
-- Helle    
-    - prototype design, brukerstøtte, tidlig figma-utvikler i prosjektet, kundemøter
+- **Iusup**
+  Hovedutvikler for både frontend og backend. Har hatt ansvar for database, drift, optimeringer, designgjennomføring, distribusjon (deploy) og feilretting. Han bidro spesielt med å bygge opp koden og databasen for å effektivisere systemet og få ideen til livs.
 
-Hvorfor disse rollene
+- **Nell**
+  Kundeansvarlig og design-ressurs. Har jobbet med kundemøter, brukertesting og planlegging. Bidro sterkt i de tidlige fasene av prosjektet med prototyping i Figma, utforming av databasesystemer og dokumentasjon av konseptet.
 
-Isusp
--Han kom in etter vi var hadde komme opp med hoved ideen, han er god på å kode og lage databaser som hjalp oss med og effektivisere arbeidet
+- **Helle**
+  Kundeansvarlig og konseptutvikler. Har jobbet tett på kundemøter og brukerstøtte. Bidro betydelig med idémyldring rundt videreutvikling av systemet, og med tidlige løsninger for databasesystemet og design via Figma.
 
-Nell
--Han hjalp med design og dokumentere og tidlig design av system/ database system
+---
 
-Helle
--Hun har hjalp med tidligere design og tidlige løsninger til database samt ideer på videre utvikling.
+## Hvordan starte opp
 
-Typer av teknologi brukt
+For å kjøre denne nettsiden trenger du en database (PostgreSQL) og Node.js installert på PC-en din (eller på en server som Railway/Vercel).
 
-Slutt produktet
-
-    -typescript
-    -html
-    -css
-
-prototype
-
-    -figma
-    
-## Forutsetninger
-
-- Node.js 18 eller nyere: https://nodejs.org/
-- npm (følger med Node.js)
-- En PostgreSQL-database (f.eks. fra Supabase, Neon, eller lokalt)
-
-## Installasjon
-
-1. Klon prosjektet:
-
+### 1. Klon eller last ned koden
+Først, last ned prosjektkoden til din datamaskin eller server.
 ```bash
 git clone https://github.com/y114git/utsyn-app.git
 cd utsyn-app
 ```
 
-2. Installer avhengigheter:
-
+### 2. Installer nødvendige filer
+Kjør denne kommandoen for å installere pakkene systemet trenger:
 ```bash
 npm install
 ```
 
-3. Sett miljøvariabler. Opprett `.env.local`:
-
-```
+### 3. Koble til databasen
+Opprett en ny tekstfil i hovedmappen og kall den **nøyaktig** `.env.local`. I denne filen limer du inn adressen til databasen din (f.eks. fra Neon, Supabase eller Railway):
+```env
 DATABASE_URL=postgres://bruker:passord@host:port/database?sslmode=require
-JWT_SECRET=en-lang-tilfeldig-tekst-her
 ```
 
-**Viktig:** `DATABASE_URL` er påkrevd for at applikasjonen skal fungere.
-
-## Kjoring
-
-### Utviklingsmodus
-
+### 4. Start nettsiden
+Kjør programmet:
 ```bash
 npm run dev
 ```
+Gå til **http://localhost:3000** i nettleseren din, og nettsiden er i gang! 
 
-Apne http://localhost:3000 i nettleseren.
+*(For produksjon / live server, bruker du `npm run build` og deretter `npm start`)*
 
-### Produksjon
+---
 
-```bash
-npm run build
-npm start
-```
+## Førstegangsoppsett (Viktig!)
 
-Serveren starter pa port 3000 som standard. For a endre port:
+Når systemet kjører for første gang og er koblet til en tom database, må du opprette en administrator:
+1. Gå til **http://localhost:3000/admin**
+2. Databasen vil nå bygge seg selv automatisk!
+3. Du vil se et skjema. Skriv inn ditt ønskede **Brukernavn** og **Passord**.
+4. Nå kan du logge inn som administrator og styre alt fra dashbordet.
 
-```bash
-PORT=8080 npm start
-```
+---
 
-## Forstegangsoppsett
+## Slik styrer du Åpningstider og Datoer
 
-1. Sørg for at `DATABASE_URL` er satt i `.env.local`
-2. Start serveren med `npm run dev`
-3. Gå til http://localhost:3000/admin
-4. Første gang du besøker denne siden, opprettes tabellene automatisk, og du ser et oppsettskjema
-5. Skriv inn brukernavn og passord for den første administratoren
-6. Logg inn med den nye kontoen
+I admin-panelet under **Innstillinger**, finner du to veldig viktige seksjoner for å styre når gjester kan besøke restauranten:
 
-## Struktur
+### 1. Åpningstider (Standard uke)
+Her bestemmer du hvordan en helt vanlig uke ser ut.
+* **Standard:** Standard genererer systemet selv tilgjengelige tider basert på feltene *Fra*, *Til* og et valgt intervall (f.eks hvert 15. minutt).
+* **Spesifikke tidspunkt:** Ønsker du nøyaktig kontroll over hvilke tider som kan velges? Fyll inn **Spesifikke tidspunkt** med kommaseparerte tider (f.eks: `17:00, 18:00, 19:30`). Da vil systemet ignorere Fra/Til, og kunden kan *kun* velge de tidene du har skrevet!
 
-```
-src/
-  app/
-    api/                  Backend (API-ruter)
-      auth/               Innlogging og utlogging
-      availability/       Sjekk ledige tider
-      closures/           Spesielle stengte dager
-      open-days/          Apningstider per ukedag
-      reservations/       Reservasjoner (opprett, list, oppdater)
-      settings/           Innstillinger for nettsiden
-      setup/              Forstegangsoppsett
-      users/              Brukeradministrasjon
-    admin/                Admin-sider
-      (dashboard)/
-        brukere/          Administrer brukere
-        dashboard/        Oversikt (reservasjoner i dag)
-        innstillinger/    Rediger innhold, timer, priser
-        reservasjoner/    Haandter reservasjoner
-    bestill/              Bestillingswizard for gjester
-    globals.css           Designsystem (CSS-variabler)
-    layout.tsx            Rot-layout
-    page.tsx              Forsiden
-  components/             React-komponenter
-    A11yToolbar.tsx        Tilgjengelighetsverktoy (skriftstorrelse, kontrast)
-    Footer.tsx             Bunntekst
-    Header.tsx             Toppnavigasjon
-    Icons.tsx              SVG-ikoner (tilgjengelige, universell utforming)
-    LocaleProvider.tsx     Sprakstotte (norsk/engelsk)
-  lib/                    Hjelpefunksjoner
-    auth.ts               JWT og passord-hashing
-    db.ts                 PostgreSQL database og skjema (postgres.js)
-    i18n.ts               Oversettelser (norsk og engelsk)
-    utils.ts              Validering, formatering, hjelpefunksjoner
-```
+### 2. Avvikende åpningstider / Stengte dager
+Her legger du inn tider for ferier, helligdager eller spesielle eventer. Alt du legger inn her vil **overkjøre** den vanlige uken.
+* **Vil du stenge helt en dag?** Velg dato og huk av for *"Helt stengt denne dagen"*.
+* **Vil du ha åpent, men med andre tider enn normalt?** Velg dato, huk *bort* "Helt stengt denne dagen", og skriv inn dine egne *Spesifikke tidspunkt* (f.eks `12:00, 14:00`). Gjestene vil da kun kunne bestille på disse tidene akkurat denne dagen.
 
-## Funksjoner
+---
 
-### For gjester
+## SMS-Varslinger (Konfigurasjon)
 
-- Bestilling av bord direkte på nettsiden, 24/7
-- Flerstegs wizard: antall gjester, dato, tidspunkt, kontaktinfo, bekreftelse
-- Se tilgjengelige og opptatte tidspunkter
-- Bekreftelseskode etter bestilling
-- Norsk og engelsk
-- Universell utforming (WCAG 2.1)
+Restaurant Utsyn har et smart, innebygd system for SMS. Under **Innstillinger** > **Kontakt og Kapasitet** kan du endre leverandør og maler.
 
-### For ansatte
+### Malene du kan tilpasse:
+Du kan skrive akkurat hva du vil i SMS-ene gjesten mottar ved hjelp av smarte "koder" som fyller seg ut selv: `{kode}`, `{dato}`, `{tid}`, `{antall}`.
+1. **Ny booking:** Sendes umiddelbart når gjesten bestiller på nettsiden.
+2. **Bekreftelse/Bord tildelt:** Sendes manuelt av servitørene når de tildeler et bord i Bordkartet og trykker "Send SMS".
+3. **Kansellert:** Sendes automatisk hvis du setter reservasjonen til "Kansellert" i dashbordet.
+4. **Ikke møtt:** Sendes automatisk hvis du setter status til "Ikke møtt" i dashbordet.
 
-- Oversikt over dagens og kommende reservasjoner
-- Marker reservasjoner som fullført, kansellert eller ikke-møtt
-- Interaktivt bordkart for å manuelt tildele og bekrefte bord med SMS-varsling
+### Valg av SMS-leverandør:
+* **Twilio (Anbefales for enklest oppsett):** Fyll inn din Twilio SID, Token og telefonnummer rett i innstillingene, og systemet gjør alt selv.
+* **Webhook (For avanserte, f.eks Make.com/Zapier):** Hvis du velger dette, vil systemet sende SMS-løpene dit du vil. Perfekt hvis du har et annet felles bedriftssystem.
 
-### For administratorer
+---
 
-- Rediger åpningstider og stengte dager
-- Endre priser, kontaktinfo og innhold på forsiden
-- Brukeradministrasjon (admin/ansatt)
-- Konfigurer SMS-leverandør (Twilio eller Webhook)
+## Endre Bordkartet
 
-## Database
+Systemet har et interaktivt bordkart hvor hovmester kan dra og slippe bookinger på bord.
+Ønsker du å endre utseendet eller plasseringen av bordene fysisk på skjermen?
+Du kan redigere koordinatene og størrelsene på bord og søyler direkte i filen:
+`src/app/admin/(dashboard)/bord/page.tsx`.
 
-Applikasjonen bruker **PostgreSQL** som database. Tabellene opprettes automatisk ved første oppstart via `src/lib/db.ts`.
-
-Tabeller:
-- `users` - Kontoer
-- `settings` - Konfigurasjon
-- `open_days` - Åpningstider
-- `special_closures` - Stengte dager
-- `reservations` - Bestillinger
-- `tables_config` - Bordoppsett
-- `table_assignments` - Tildelte bord
-
-## Sikkerhet
-
-- Passord hashes med bcrypt
-- Autentisering via JWT i httpOnly-cookies
-- Parameteriserte SQL-spørringer (postgres.js tagged templates)
-- CORS og Input-validering
-
-## SMS-oppsett (valgfritt)
-
-Restaurant Utsyn har to måter å sende SMS-bekreftelser på, som kan konfigureres under admin-innstillingene ved å endre "SMS Leverandør":
-
-### 1. Twilio (Direkte integrasjon - Anbefalt)
-Fyll inn dine API-detaljer rett i innstillingene, så sender systemet SMS helt automatisk uten noen mellomledd:
-- **Twilio Account SID**
-- **Twilio Auth Token**
-- **Twilio Sender Number**
-
-### 2. Webhook (Make.com, Zapier, etc.)
-Ved å bruke Webhook sender systemet en POST-forespørsel til en gitt URL. Perfekt hvis du vil koble SMS opp mot et annet system eller bruke en annen SMS-leverandør enn Twilio.
-Forespørselen inneholder følgende JSON:
-```json
-{
-  "phone": "+4712345678",
-  "message": "Meldingen generert fra malene dine..."
-}
-```
-
-### SMS-Maler og Utsendelse
-Du kan fritt redigere innholdet på SMS-meldingene direkte i admin-panelet via to maler (med hjelp av hendige variabler som {kode}, {dato}, {tid} og {antall}):
-- **SMS Mal - Ny booking:** Sendes umiddelbart og automatisk når en gjest oppretter en ny bestilling.
-- **SMS Mal - Bekreftelse/Bord tildelt:** Sendes manuelt av personalet når de har tildelt nok bordplasser til gjesten via "Bordkart"-siden og deretter trykker "Bekreft & Send SMS".
-
-## Bordkart
-
-For å endre plassering av bordene, eller andre objekter, gå til src\app\admin\(dashboard)\bord\page.tsx og endre koordinatene i tablePositions, pillarPositions, floorPlan osv.
+---
 
 ## Tilgjengelighet
+Nettsiden følger strenge standarder for universell utforming (WCAG 2.1 AA):
+* Full tastaturnavigasjon og opplesbarhet for svaksynte.
+* Egen tilgjengelighets-meny *(A11yToolbar)* for å øke tekststørrelse eller bytte til høykontrast/svart-hvitt.
+* Både Engelsk og Norsk språk lett tilgjengelig for gjestene.
 
-Nettsiden folger WCAG 2.1 AA:
+---
 
-- Stotte for skjermlesere (ARIA-labels)
-- Full tastaturnavigasjon
-- Justerbar skriftstorrelse
-- Hoykontrastmodus
-- Minimale trykkmaal pa 44x44px
-- Respekterer brukerens preferanser for redusert bevegelse
-- SVG-ikoner med tilgjengelighetsstotte
+## Feilsøking (Hjelp, noe fungerer ikke!)
 
-## Teknologier
+**Nettsiden vil ikke starte og klager på databasen?**
+* Sørg for at du faktisk la filen `.env.local` i selve rotmappen (ikke inni en annen mappe).
+* Sjekk at `DATABASE_URL` er helt korrekt kopiert fra din database-leverandør.
 
-- **Framework:** Next.js (App Router, TypeScript)
-- **Database:** PostgreSQL via `postgres.js`
-- **Autentisering:** JWT + bcrypt
-- **Styling:** Vanilla CSS med moderne designsystem
-- **Språk:** Norsk og engelsk (i18n)
+**Får en oppdatering eller endring ikke utslag?**
+* Hvis du har endret kode, prøv å bygge prosjektet på nytt ved å slette `.next`-mappen og kjøre programmer på nytt med `npm run dev`.
 
-## Feilsoking
-
-**Tilkoblingsfeil mot database:**
-- Sjekk at `DATABASE_URL` i `.env.local` er korrekt
-- Sjekk at databasen tillater tilkoblinger og at SSL er konfigurert hvis nødvendig (`?sslmode=require`)
-
-**Build-feil:**
-- Prøv å slette `.next`-mappen: `rm -rf .next && npm run build`
-
-Lock-feil ved `npm run dev`:
-
-- En annen instans kjorer. Stopp den forst, eller slett `.next/dev/lock`
-
-## Lisens
-
-Laget for Tangen videregående skole.
+---
+*Laget med 💖 for Restaurant Utsyn, Tangen videregående skole.*

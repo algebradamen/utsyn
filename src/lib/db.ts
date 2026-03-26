@@ -55,8 +55,17 @@ export async function initializeDatabase() {
       date TEXT NOT NULL UNIQUE,
       reason_no TEXT DEFAULT '',
       reason_en TEXT DEFAULT '',
+      is_closed BOOLEAN NOT NULL DEFAULT TRUE,
+      time_slots TEXT DEFAULT '',
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`;
+
+    try {
+      await sql`ALTER TABLE special_closures ADD COLUMN IF NOT EXISTS is_closed BOOLEAN NOT NULL DEFAULT TRUE`;
+      await sql`ALTER TABLE special_closures ADD COLUMN IF NOT EXISTS time_slots TEXT DEFAULT ''`;
+    } catch (e) {
+      console.warn('columns already exist or err:', e);
+    }
 
     await sql`CREATE TABLE IF NOT EXISTS reservations (
       id SERIAL PRIMARY KEY,

@@ -15,9 +15,19 @@ export async function GET(request: NextRequest) {
 
         // Check for special closure
         const closures = await sql`SELECT * FROM special_closures WHERE date = ${date}`;
-        const closure = closures[0];
+        let closure = closures[0];
+        
+        let customTimeSlotsOverride: string | null = null;
+        let isSpecialClosed = false;
+
         if (closure) {
-            return NextResponse.json({ closed: true, reason: 'Special closure', slots: [] });
+            const isClosedBool = closure.is_closed === true || closure.is_closed === 1;
+            if (isClosedBool) {
+                return NextResponse.json({ closed: true, reason: 'Special closure', slots: [] });
+            } else {
+                // If special day but not closed, use its time_slots
+                customTimeSlotsOverride = closure.time_slots || '';
+            }
         }
 
         // Get day of week (JS: 0=Sun, 1=Mon, ..., 6=Sat)
@@ -34,7 +44,8 @@ export async function GET(request: NextRequest) {
 
         const isActive = openDay?.is_active === true || openDay?.is_active === 1;
 
-        if (!openDay || !isActive) {
+        if (!closure && (!openDay || !isActive)) {
+            // Only block if there's no custom special override for this day
             return NextResponse.json({ closed: true, reason: 'Not open this day', slots: [] });
         }
 
@@ -52,10 +63,17 @@ export async function GET(request: NextRequest) {
 
         // Generate time slots
         let slots: string[] = [];
-        if (openDay.time_slots && openDay.time_slots.trim().length > 0) {
+        const hasCustomOverride = customTimeSlotsOverride && customTimeSlotsOverride.trim().length > 0;
+        
+        if (hasCustomOverride) {
+            slots = customTimeSlotsOverride!.split(',').map(s => s.trim()).filter(s => s.length > 0);
+        } else if (openDay?.time_slots && openDay.time_slots.trim().length > 0) {
             slots = openDay.time_slots.split(',').map(s => s.trim()).filter(s => s.length > 0);
-        } else {
+        } else if (openDay && openDay.open_time && openDay.close_time) {
             slots = generateTimeSlots(openDay.open_time, openDay.close_time, interval, cutoff);
+        } else {
+            // No custom override and no valid openDay generating slots means closed
+            return NextResponse.json({ closed: true, reason: 'Invalid day configuration', slots: [] });
         }
 
         // Get existing reservations for this date
@@ -76,8 +94,8 @@ export async function GET(request: NextRequest) {
 
         return NextResponse.json({
             closed: false,
-            openTime: openDay.open_time,
-            closeTime: openDay.close_time,
+            openTime: openDay?.open_time || '00:00',
+            closeTime: openDay?.close_time || '23:59',
             maxCapacity,
             slots: availability,
         });
