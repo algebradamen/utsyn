@@ -417,9 +417,15 @@ export default function BordPage() {
                 {/* Sidebar with reservations */}
                 <div className="reservations-sidebar">
                     <h3>Reservasjoner ({formatDatePretty(filterDate)})</h3>
-                    <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-md)' }}>
-                        Velg en reservasjon for å tildele bord. Klikk på et bord for å endre antall plasser.
-                    </p>
+                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-md)', lineHeight: '1.5' }}>
+                        <strong>Slik tildeler du bord:</strong>
+                        <ol style={{ margin: '4px 0 0 16px', padding: 0 }}>
+                            <li>Klikk på en reservasjon i listen under</li>
+                            <li>Klikk på et bord på kartet for å tildele</li>
+                            <li>Klikk «Bekreft &amp; Send SMS» når ferdig</li>
+                        </ol>
+                        <div style={{ marginTop: '6px', fontStyle: 'italic' }}>Klikk et bord uten valgt reservasjon for å endre bordets innstillinger.</div>
+                    </div>
 
                     <div className="reservations-list">
                         {reservations.length === 0 ? (
@@ -459,7 +465,7 @@ export default function BordPage() {
                                         <div className="res-card-guests">{r.guests_count} gjester</div>
                                         <div className="res-card-status">
                                             <span className={`status-badge-mini status-${r.status}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                                                {r.status === 'needs_seat' ? <><IconHourglass size={14} /> Trenger bord</> : r.status === 'confirmed' ? <><IconCheck size={14} /> Bekreftet</> : <><IconCheck size={14} /> Fullført</>}
+                                                {r.status === 'needs_seat' ? <><IconHourglass size={14} /> Venter på bord</> : r.status === 'confirmed' ? <><IconCheck size={14} /> Bekreftet</> : <><IconCheck size={14} /> Fullført</>}
                                             </span>
                                         </div>
                                         {assignedTables.length > 0 && (
@@ -494,9 +500,9 @@ export default function BordPage() {
                     <div className="floor-plan-toolbar">
                         <div className="floor-plan-legend">
                             <div className="legend-item"><span className="legend-box free"></span> Ledig</div>
-                            <div className="legend-item"><span className="legend-box occupied"></span> Opptatt på valgt tid</div>
-                            <div className="legend-item"><span className="legend-box has-reservations"></span> Har reservasjoner</div>
-                            <div className="legend-item"><span className="legend-box selected-legend"></span> Valgt for gjest</div>
+                            <div className="legend-item"><span className="legend-box occupied"></span> Opptatt (samme tidspunkt)</div>
+                            <div className="legend-item"><span className="legend-box has-reservations"></span> Har andre reservasjoner</div>
+                            <div className="legend-item"><span className="legend-box selected-legend"></span> Tildelt valgt gjest</div>
                         </div>
                         <div className="floor-plan-actions">
                             {editMode && (

@@ -97,11 +97,11 @@ export default function ReservasjonerPage() {
 
   const statusLabel = (status: string) => {
     const map: Record<string, string> = {
+      needs_seat: 'Venter på bord',
       confirmed: 'Bekreftet',
-      needs_seat: 'Trenger plass',
       cancelled: 'Kansellert',
-      completed: 'Godkjent',
-      no_show: 'Ikke møtt',
+      completed: 'Fullført',
+      no_show: 'Møtte ikke',
     };
     return map[status] || status;
   };
@@ -146,11 +146,11 @@ export default function ReservasjonerPage() {
             style={{ width: 'auto' }}
           >
             <option value="all">Alle</option>
-            <option value="needs_seat">Trenger plass</option>
+            <option value="needs_seat">Venter på bord</option>
             <option value="confirmed">Bekreftet</option>
+            <option value="completed">Fullført</option>
             <option value="cancelled">Kansellert</option>
-            <option value="completed">Godkjent</option>
-            <option value="no_show">Ikke møtt</option>
+            <option value="no_show">Møtte ikke</option>
           </select>
         </div>
         {filterDate && (
@@ -162,6 +162,22 @@ export default function ReservasjonerPage() {
             Nullstill dato
           </button>
         )}
+      </div>
+
+      {/* Status workflow help */}
+      <div style={{ 
+        display: 'flex', gap: 'var(--space-md)', flexWrap: 'wrap', 
+        marginBottom: 'var(--space-lg)', padding: 'var(--space-md) var(--space-lg)', 
+        background: 'var(--color-bg-alt)', borderRadius: 'var(--radius-md)',
+        fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)',
+        alignItems: 'center'
+      }}>
+        <span style={{ fontWeight: 600, color: 'var(--color-text)', marginRight: 'var(--space-xs)' }}>Statusforklaring:</span>
+        <span><span className="status-badge status-needs_seat" style={{ marginRight: '4px' }}>Venter på bord</span> Ny reservasjon, trenger bordtildeling</span>
+        <span>→</span>
+        <span><span className="status-badge status-confirmed" style={{ marginRight: '4px' }}>Bekreftet</span> Bord tildelt, SMS sendt til gjest</span>
+        <span>→</span>
+        <span><span className="status-badge status-completed" style={{ marginRight: '4px' }}>Fullført</span> Gjesten har vært og gått</span>
       </div>
 
       {reservations.length === 0 ? (
@@ -206,15 +222,15 @@ export default function ReservasjonerPage() {
                         {(r.status === 'confirmed' || r.status === 'needs_seat') && (
                           <>
                             <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-                              <button className="btn btn-success btn-sm" onClick={() => updateStatus(r.id, 'completed')} title="Marker som fullfort" aria-label="Marker som fullfort" style={{ padding: '6px 12px' }}>
+                              <button className="btn btn-success btn-sm" onClick={() => updateStatus(r.id, 'completed')} title="Marker som fullført — gjesten har besøkt restauranten" aria-label="Marker som fullført" style={{ padding: '6px 12px' }}>
                                 <IconCheck size={16} />
                               </button>
-                              <button className="btn btn-danger btn-sm" onClick={() => updateStatus(r.id, 'cancelled')} title="Kanseller" aria-label="Kanseller" style={{ padding: '6px 14px' }}>
+                              <button className="btn btn-danger btn-sm" onClick={() => updateStatus(r.id, 'cancelled')} title="Kanseller reservasjonen" aria-label="Kanseller" style={{ padding: '6px 14px' }}>
                                 <IconX size={16} />
                               </button>
                             </div>
-                            <button className="btn btn-warning btn-sm" onClick={() => updateStatus(r.id, 'no_show')} title="Ikke møte" aria-label="Ikke møte" style={{ padding: '4px 10px', height: 'auto', fontWeight: 600, fontSize: '12px' }}>
-                              Ikke møte
+                            <button className="btn btn-warning btn-sm" onClick={() => updateStatus(r.id, 'no_show')} title="Gjesten møtte ikke opp til reservasjonen" aria-label="Møtte ikke" style={{ padding: '4px 10px', height: 'auto', fontWeight: 600, fontSize: '12px' }}>
+                              Møtte ikke
                             </button>
                           </>
                         )}

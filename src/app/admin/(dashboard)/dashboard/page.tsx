@@ -63,7 +63,12 @@ export default function Dashboard() {
         .filter(r => r.date === todayStr)
         .sort((a, b) => a.time_slot.localeCompare(b.time_slot));
     
-    // All upcoming reservations (today and future), grouped by date
+    // Future reservations (EXCLUDING today) for the second card
+    const futureReservations = reservations
+        .filter(r => r.date > todayStr && (r.status === 'confirmed' || r.status === 'needs_seat'))
+        .sort((a, b) => a.date.localeCompare(b.date) || a.time_slot.localeCompare(b.time_slot));
+    
+    // All upcoming reservations (today + future) for the table below
     const upcomingReservations = reservations
         .filter(r => r.date >= todayStr && (r.status === 'confirmed' || r.status === 'needs_seat'))
         .sort((a, b) => a.date.localeCompare(b.date) || a.time_slot.localeCompare(b.time_slot));
@@ -82,7 +87,15 @@ export default function Dashboard() {
     const nextDateReservations = nextDateWithReservations ? upcomingByDate[nextDateWithReservations] : [];
 
     const todayGuests = todayReservations.reduce((sum, r) => sum + r.guests_count, 0);
-    const totalUpcomingGuests = upcomingReservations.reduce((sum, r) => sum + r.guests_count, 0);
+    
+    // Future stats (excluding today)
+    const futureByDate = futureReservations.reduce((acc, r) => {
+        if (!acc[r.date]) acc[r.date] = [];
+        acc[r.date].push(r);
+        return acc;
+    }, {} as Record<string, Reservation[]>);
+    const futureDates = Object.keys(futureByDate);
+    const totalFutureGuests = futureReservations.reduce((sum, r) => sum + r.guests_count, 0);
 
     return (
         <>
@@ -93,22 +106,22 @@ export default function Dashboard() {
 
             <div className="stats-grid">
                 <div className="stat-card">
-                    <div className="stat-label">Reservasjoner i dag ({formatDateShort(todayStr)})</div>
+                    <div className="stat-label">I dag — {formatDateShort(todayStr)}</div>
                     <div className="stat-value">{todayReservations.length}</div>
                     <div style={{ marginTop: 'var(--space-sm)', color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)' }}>
                         {todayReservations.length > 0 
-                            ? `Totalt ${todayGuests} gjester i dag` 
+                            ? `${todayGuests} gjester fordelt på ${todayReservations.length} reservasjon${todayReservations.length > 1 ? 'er' : ''}` 
                             : 'Ingen reservasjoner i dag'
                         }
                     </div>
                 </div>
                 <div className="stat-card">
-                    <div className="stat-label">Kommende reservasjoner</div>
-                    <div className="stat-value">{upcomingReservations.length}</div>
+                    <div className="stat-label">Fremtidige reservasjoner</div>
+                    <div className="stat-value">{futureReservations.length}</div>
                     <div style={{ marginTop: 'var(--space-sm)', color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)' }}>
-                        {upcomingReservations.length > 0
-                            ? `Totalt ${totalUpcomingGuests} gjester over ${upcomingDates.length} dag(er)`
-                            : 'Ingen kommende reservasjoner'
+                        {futureReservations.length > 0
+                            ? `${totalFutureGuests} gjester over ${futureDates.length} ${futureDates.length === 1 ? 'dag' : 'dager'}`
+                            : 'Ingen fremtidige reservasjoner'
                         }
                     </div>
                 </div>
@@ -184,7 +197,7 @@ export default function Dashboard() {
                                             <td><a href={`tel:${r.phone}`}>{r.phone}</a></td>
                                             <td>
                                                 <span className={`status-badge status-${r.status}`}>
-                                                    {r.status === 'confirmed' ? 'Bekreftet' : (r.status === 'needs_seat' ? 'Trenger plass' : 'Fullført')}
+                                                    {r.status === 'confirmed' ? 'Bekreftet' : (r.status === 'needs_seat' ? 'Venter på bord' : 'Fullført')}
                                                 </span>
                                             </td>
                                         </tr>

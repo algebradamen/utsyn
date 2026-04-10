@@ -152,6 +152,9 @@ export default function InnstillingerPage() {
       {/* Site Content */}
       <div className="admin-form-section">
         <h3>Nettsidens innhold</h3>
+        <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-lg)', marginTop: '-var(--space-sm)' }}>
+          Teksten som vises på forsiden av nettsiden for gjester.
+        </p>
         <div className="admin-form-grid">
           <div className="form-group">
             <label className="form-label">Tittel (Norsk)</label>
@@ -200,10 +203,12 @@ export default function InnstillingerPage() {
           <div className="form-group">
             <label className="form-label">Maks kapasitet (personer)</label>
             <input className="form-input" type="number" value={settings.max_capacity || ''} onChange={e => updateSetting('max_capacity', e.target.value)} />
+            <div className="form-hint">Maks antall gjester som kan reservere på ett tidspunkt. Når grensen nås, vises tidspunktet som fullt.</div>
           </div>
           <div className="form-group">
             <label className="form-label">Booking stoppes X min før stenging</label>
             <input className="form-input" type="number" value={settings.booking_cutoff_minutes || ''} onChange={e => updateSetting('booking_cutoff_minutes', e.target.value)} />
+            <div className="form-hint">Hindrer gjester fra å reservere for tett opp mot stengetid. F.eks. 60 = siste reservasjon 1 time før stenging.</div>
           </div>
           <div className="form-group" style={{ gridColumn: '1 / -1' }}>
              <label className="form-label">SMS Leverandør</label>
@@ -246,7 +251,7 @@ export default function InnstillingerPage() {
             <textarea className="form-textarea" value={settings.sms_template_cancelled || ''} onChange={e => updateSetting('sms_template_cancelled', e.target.value)} rows={3} />
           </div>
           <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-            <label className="form-label">SMS Mal - Ikke møtt (Bruk {"{kode}"}, {"{dato}"}, {"{tid}"}, {"{antall}"})</label>
+            <label className="form-label">SMS Mal - Møtte ikke (Bruk {"{kode}"}, {"{dato}"}, {"{tid}"}, {"{antall}"})</label>
             <textarea className="form-textarea" value={settings.sms_template_noshow || ''} onChange={e => updateSetting('sms_template_noshow', e.target.value)} rows={3} />
           </div>
         </div>

@@ -162,6 +162,11 @@
   color: var(--color-full-text) !important;
 }
 
+[data-contrast="high"] .status-needs_seat {
+  background: #332200 !important;
+  color: #ffcc00 !important;
+}
+
 /* Page-specific overrides for High Contrast */
 [data-contrast="high"] .hero {
   background: #000000 !important;
@@ -1425,6 +1430,11 @@ body {
 .status-no_show {
   background: #FFF3E0;
   color: #E65100;
+}
+
+.status-needs_seat {
+  background: #FFF8E1;
+  color: #F57F17;
 }
 
 .actions-cell {
