@@ -1,3 +1,4 @@
+export const runtime = 'nodejs';
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
