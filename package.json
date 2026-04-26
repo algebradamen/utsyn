@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
@@ -19,6 +21,7 @@
     "react-dom": "^19.2.4"
   },
   "devDependencies": {
+    "@opennextjs/cloudflare": "^1.19.4",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.5.0",
     "@types/react": "^19.2.14",
