@@ -1,8 +1,8 @@
 import getDb from './db';
 
 export async function sendSms(phone: string, message: string) {
-    if (!phone || !message) return false;
-    
+    const trimmedPhone = phone?.trim();
+    if (!trimmedPhone || !message) return false;
     try {
         const sql = await getDb();
         const settingsRows = await sql`SELECT key, value FROM settings WHERE key IN ('sms_provider', 'sms_twilio_sid', 'sms_twilio_token', 'sms_twilio_from', 'sms_webhook_url')`;
@@ -14,15 +14,15 @@ export async function sendSms(phone: string, message: string) {
         const provider = settings['sms_provider'] || 'webhook';
 
         if (provider === 'twilio') {
-            const sid = settings['sms_twilio_sid'];
-            const token = settings['sms_twilio_token'];
-            const from = settings['sms_twilio_from'];
+            const sid = (settings['sms_twilio_sid'] || '').trim();
+            const token = (settings['sms_twilio_token'] || '').trim();
+            const from = (settings['sms_twilio_from'] || '').trim();
 
             if (sid && token && from) {
                 const url = `https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`;
                 const auth = Buffer.from(`${sid}:${token}`).toString('base64');
                 const formData = new URLSearchParams();
-                formData.append('To', phone);
+                formData.append('To', phone.trim());
                 formData.append('From', from);
                 formData.append('Body', message);
 
@@ -41,18 +41,23 @@ export async function sendSms(phone: string, message: string) {
                 }
                 return true;
             }
+
+            console.error('Twilio SMS skipped because configuration is incomplete', {
+                hasSid: Boolean(sid),
+                hasToken: Boolean(token),
+                hasFrom: Boolean(from),
+            });
         } else if (provider === 'webhook') {
-            const webhookRows = await sql`SELECT value FROM settings WHERE key = 'sms_webhook_url'`;
-            const webhookRow = webhookRows[0] as { value: string } | undefined;
-            if (webhookRow?.value) {
-                const res = await fetch(webhookRow.value, {
+            const webhookUrl = settings['sms_webhook_url']?.trim();
+            if (webhookUrl) {
+                const res = await fetch(webhookUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ phone, message })
                 });
                 if (!res.ok) {
                    console.error('Webhook error:', await res.text());
-                   return false; 
+                   return false;
                 }
                 return true;
             }
