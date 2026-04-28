@@ -79,7 +79,14 @@ export default function InnstillingerPage() {
   const saveSettings = async () => {
     try {
       const payload = Object.fromEntries(
-        Object.entries(settings).filter(([key]) => allowedSettingKeys.has(key))
+        Object.entries(settings)
+          .filter(([key]) => allowedSettingKeys.has(key))
+          .map(([key, value]) => {
+            if (typeof value === 'string' && ['sms_twilio_sid', 'sms_twilio_token', 'sms_twilio_from', 'sms_provider', 'sms_webhook_url'].includes(key)) {
+              return [key, value.trim()];
+            }
+            return [key, value];
+          })
       );
 
       const res = await fetch('/api/settings', {
@@ -350,7 +357,6 @@ export default function InnstillingerPage() {
         <button className="btn btn-primary" onClick={saveOpenDays}>Lagre åpningstider</button>
       </div>
 
-      {/* Special Closures */}
       {/* Special Closures */}
       <div className="admin-form-section">
         <h3>Avvikende åpningstider / Stengte dager</h3>
