@@ -63,14 +63,36 @@ export default function InnstillingerPage() {
     setTimeout(() => setToast(''), 3000);
   };
 
+  const allowedSettingKeys = new Set([
+    'hero_title_no', 'hero_title_en',
+    'hero_subtitle_no', 'hero_subtitle_en',
+    'about_text_no', 'about_text_en',
+    'address', 'phone', 'email',
+    'max_capacity', 'booking_cutoff_minutes',
+    'sms_provider', 'sms_webhook_url',
+    'sms_twilio_sid', 'sms_twilio_token', 'sms_twilio_from',
+    'sms_template_received', 'sms_template_confirmed',
+    'sms_template_cancelled', 'sms_template_noshow',
+    'currency', 'price_main', 'price_dessert',
+    'time_slot_interval',
+  ]);
   const saveSettings = async () => {
     try {
+      const payload = Object.fromEntries(
+        Object.entries(settings).filter(([key]) => allowedSettingKeys.has(key))
+      );
+
       const res = await fetch('/api/settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(settings),
+        body: JSON.stringify(payload),
       });
       if (res.ok) showToast('Innstillinger lagret!');
+      else {
+        const result = await res.json().catch(() => null);
+        console.error('Save settings failed:', result || res.statusText);
+        showToast('Feil ved lagring av innstillinger');
+      }
     } catch (err) {
       console.error('Error saving settings:', err);
     }

@@ -30,7 +30,7 @@ export async function PUT(request: Request) {
         }
 
         const body = await request.json();
-        
+
         // Define whitelist of permitted settings keys
         const allowedKeys = new Set([
             'hero_title_no', 'hero_title_en',
@@ -43,14 +43,14 @@ export async function PUT(request: Request) {
             'sms_template_received', 'sms_template_confirmed',
             'sms_template_cancelled', 'sms_template_noshow',
             'currency', 'price_main', 'price_dessert',
-            'site_name', 'time_slot_interval'
+            'time_slot_interval'
         ]);
 
         // Filter and validate entries
         const filteredEntries: [string, string][] = [];
         for (const [key, value] of Object.entries(body)) {
             if (!allowedKeys.has(key)) {
-                return NextResponse.json({ error: `Forbidden configuration key: ${key}` }, { status: 400 });
+                continue; // ignore hidden or legacy keys
             }
             // Coerce to string and basic length validation to prevent DB abuse
             const stringValue = String(value);
