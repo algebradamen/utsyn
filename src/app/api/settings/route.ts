@@ -42,7 +42,8 @@ export async function PUT(request: Request) {
             'sms_twilio_sid', 'sms_twilio_token', 'sms_twilio_from',
             'sms_template_received', 'sms_template_confirmed',
             'sms_template_cancelled', 'sms_template_noshow',
-            'currency', 'price_main', 'price_dessert'
+            'currency', 'price_main', 'price_dessert',
+            'site_name', 'time_slot_interval'
         ]);
 
         // Filter and validate entries
