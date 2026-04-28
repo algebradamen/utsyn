@@ -132,7 +132,6 @@ export async function initializeDatabase() {
     const settingsCheck = await sql`SELECT COUNT(*) FROM settings`;
     if (Number(settingsCheck[0].count) === 0) {
       const defaultSettings = [
-        { key: 'site_name', value: 'Restaurant Utsyn' },
         { key: 'hero_title_no', value: 'Velkommen til Restaurant Utsyn' },
         { key: 'hero_title_en', value: 'Welcome to Restaurant Utsyn' },
         { key: 'hero_subtitle_no', value: 'Nyt utsikten og maten på Tangen VGS' },
